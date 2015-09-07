@@ -19,17 +19,25 @@ class FgczMaxquantWrapper:
 
     """
     config = None
+    scratchroot = os.path.normcase(r"d:/scratch")
 
     def __init__(self):
+    	if not os.path.isdir(self.scratchroot):
+	    try:
+	    	os.mkdir(self.scratchroot)
+            except:
+	    	print "scratch '{0}' does not exists.".format(self.scratchroot)
+	    	sys.exit(1)
         pass
 
-    def run_commandline(self, cmd):
+    def run_commandline(self, cmd, shell_flag=True):
 
         (pid, return_code) = (None, None)
 
         tStart = time.time()
+
         try:
-            p = subprocess.Popen(cmd, shell=True)
+            p = subprocess.Popen(cmd, shell=shell_flag)
 
             pid = p.pid
             return_code = p.wait()
@@ -41,10 +49,12 @@ class FgczMaxquantWrapper:
             msg = "exception|pid={0}|OSError=".format(pid, e)
             print msg
 
-        msg_info = "completed|pid={0}|time={1}|return_code={2}|cmd='{3}'".format(pid, time.time() - tStart, return_code, cmd)
+        msg_info = "completed|pid={0}|time={1}|return_code={2}|cmd='{3}'"\
+		.format(pid, time.time() - tStart, return_code, cmd)
         print msg_info
 
         print out
+        print err
         return (return_code)
 
     def print_config(self):
@@ -52,8 +62,26 @@ class FgczMaxquantWrapper:
 
     def add_configuration(self, config):
         self.config = config
-        return True
 
+
+	# create scratch space
+	self.scratch = os.path.normcase("{0}/{1}".format(self.scratchroot, self.config['job_configuration']['workunit_id']))
+    	if not os.path.isdir(self.scratch):
+	    try:
+	    	os.mkdir(self.scratch)
+            except:
+	    	print "scratch '{0}' does not exists.".format(self.scratch)
+	    	sys.exit(1)
+
+	# copy input to scratch
+	try:
+	    for i in self.config['application']['input'].keys():
+	        for j in self.config['application']['input'][i]:
+		    print j
+        except:
+	    sys.exit(1)
+
+        return True
 
     def generate_xml(self):
         pass
@@ -63,7 +91,7 @@ class FgczMaxquantWrapper:
         #$maxQuantWindowsFolder\\$MAXQUANTLINUXFOLDERNAME -ncores=8;"
         """
 
-        cmd = "C:\\Program Files\\mxQnt_versions\\MaxQuant_1.4.1.2\\MaxQuant\\bin\\MaxQuantCmd.exe -mqpar={0} -ncores={1}".format(None, 8)
+        cmd = 'C:\\Program Files\\mxQnt_versions\\MaxQuant_1.4.1.2\\MaxQuant\\bin\\MaxQuantCmd.exe -mqpar={0} -ncores={1}'.format(None, 8)
 
         print self.run_commandline(cmd)
 
@@ -87,7 +115,7 @@ if __name__ == "__main__":
 
     mqw = FgczMaxquantWrapper()
 
-    server = SimpleXMLRPCServer((options.hostname, 8082))
+    server = SimpleXMLRPCServer((options.hostname, 8084))
 
     server.register_instance(mqw)
 

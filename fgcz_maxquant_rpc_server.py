@@ -55,6 +55,23 @@ class FgczMaxquantWrapper:
         return True
 
 
+    def generate_xml(self):
+        pass
+
+    def run(self):
+        """
+        #$maxQuantWindowsFolder\\$MAXQUANTLINUXFOLDERNAME -ncores=8;"
+        """
+
+        cmd = "C:\\Program Files\\mxQnt_versions\\MaxQuant_1.4.1.2\\MaxQuant\\bin\\MaxQuantCmd.exe -mqpar={0} -ncores={1}".format(None, 8)
+
+        print self.run_commandline(cmd)
+
+    def generate_qc_report(self):
+        pass
+
+
+
 if __name__ == "__main__":
     parser = OptionParser(usage="usage: %prog -h <hostname>",
                           version="%prog 1.0")

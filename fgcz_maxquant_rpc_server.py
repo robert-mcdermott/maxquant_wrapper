@@ -65,6 +65,7 @@ class FgczMaxquantWrapper:
 
         cmd = "C:\\Program Files\\mxQnt_versions\\MaxQuant_1.4.1.2\\MaxQuant\\bin\\MaxQuantCmd.exe -mqpar={0} -ncores={1}".format(None, 8)
 
+
         print self.run_commandline(cmd)
 
     def generate_qc_report(self):

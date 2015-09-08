@@ -138,31 +138,239 @@ class FgczMaxquantWrapper:
         _input = self.config['application']['input']
 
         try:
+            self._fsrc_fdst = []
             for i in _input.keys():
-                _fsrc_fdst = map(lambda x: (self.map_url_scp2smb(x), os.path.normcase("{0}/{1}".format(self.scratch, os.path.basename(x))) ),
+                self._fsrc_fdst = self._fsrc_fdst + map(lambda x: (self.map_url_scp2smb(x), os.path.normcase("{0}/{1}".format(self.scratch, os.path.basename(x))) ),
                            _input[i])
 
 
-                for (_fsrc, _fdst) in _fsrc_fdst:
-                    if os.path.isfile(_fdst):
-                        # TODO(cp): file cmp
-                        logger.info("'{0}' is already there.".format(_fdst))
-                        pass
-                    else:
-                        try:
-                            logger.info("copy '{0}'...".format(_fdst))
-                            shutil.copyfile(_fsrc, _fdst)
-                        except:
-                            print "ERROR: fail copy failed."
-                            raise
+            for (_fsrc, _fdst) in self._fsrc_fdst:
+                if os.path.isfile(_fdst):
+                    # TODO(cp): file cmp
+                    logger.info("'{0}' is already there.".format(_fdst))
+                    pass
+                else:
+                    try:
+                        logger.info("copy '{0}'...".format(_fdst))
+                        shutil.copyfile(_fsrc, _fdst)
+                    except:
+                        print "ERROR: fail copy failed."
+                        raise
 
         except:
             raise
 
         return True
 
-    def generate_xml(self):
-        pass
+    def compose_maxquant_driver_file(self, filename=None):
+        assert isinstance(filename, basestring)
+
+        _xml="""<?xml version='1.0' encoding='UTF-8'?>
+<MaxQuantParams xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns:xsd='http://www.w3.org/2001/XMLSchema' aifSilWeight='4' aifIsoWeight='2' aifTopx='20' aifCorrelation='0.47' aifCorrelationFirstPass='0.8' aifMinMass='0' aifMsmsTol='10' aifSecondPass='true' aifIterative='true' aifThresholdFdr='0.01'>
+  <slicePeaks>true</slicePeaks>
+  <tempFolder/>
+  <fixedCombinedFolder/>
+  <ionCountIntensities>false</ionCountIntensities>
+  <verboseColumnHeaders>false</verboseColumnHeaders>
+  <minTime>NaN</minTime>
+  <maxTime>NaN</maxTime>
+  <fullMinMz>-1.7976931348623157E+308</fullMinMz>
+  <fullMaxMz>1.7976931348623157E+308</fullMaxMz>
+  <calcPeakProperties>false</calcPeakProperties>
+  <useOriginalPrecursorMz>false</useOriginalPrecursorMz>
+  <minPeakLen>2</minPeakLen>
+  <filePaths>
+    {0}
+  </filePaths>
+  <experiments>
+    {1}
+  </experiments>
+  <fractions>
+    {2}
+  </fractions>
+  <matching>
+    {3}
+  </matching>
+  <paramGroupIndices>
+    {4}
+  </paramGroupIndices>
+  <parameterGroups>
+    <parameterGroup>
+      <maxCharge>7</maxCharge>
+      <msInstrument>0</msInstrument>
+      <labelMods>
+        <string/>
+      </labelMods>
+      <lfqMinEdgesPerNode>3</lfqMinEdgesPerNode>
+      <lfqAvEdgesPerNode>6</lfqAvEdgesPerNode>
+      <fastLfq>true</fastLfq>
+      <lfqMinRatioCount>2</lfqMinRatioCount>
+      <useNormRatiosForHybridLfq>true</useNormRatiosForHybridLfq>
+      <maxLabeledAa>0</maxLabeledAa>
+      <maxNmods>5</maxNmods>
+      <maxMissedCleavages>2</maxMissedCleavages>
+      <multiplicity>1</multiplicity>
+      <enzymes>
+        <string>Trypsin/P</string>
+      </enzymes>
+      <enzymesFirstSearch/>
+      <useEnzymeFirstSearch>false</useEnzymeFirstSearch>
+      <useVariableModificationsFirstSearch>false</useVariableModificationsFirstSearch>
+      <variableModifications>
+        <string>Acetyl (Protein N-term)</string>
+        <string>Oxidation (M)</string>
+        <string>Deamidation (NQ)</string>
+      </variableModifications>
+      <isobaricLabels/>
+      <variableModificationsFirstSearch/>
+      <hasAdditionalVariableModifications>false</hasAdditionalVariableModifications>
+      <additionalVariableModifications/>
+      <additionalVariableModificationProteins/>
+      <doMassFiltering>true</doMassFiltering>
+      <firstSearchTol>20</firstSearchTol>
+      <mainSearchTol>4.5</mainSearchTol>
+      <lcmsRunType>0</lcmsRunType>
+      <lfqMode>1</lfqMode>
+      <enzymeMode>3</enzymeMode>
+      <enzymeModeFirstSearch>0</enzymeModeFirstSearch>
+    </parameterGroup>
+  </parameterGroups>
+  <fixedModifications>
+    <string>Carbamidomethyl (C)</string>
+  </fixedModifications>
+  <multiModificationSearch>false</multiModificationSearch>
+  <compositionPrediction>false</compositionPrediction>
+  <fastaFiles>
+    <string>D:\MaxQuantDBs\fgcz_swissprot_20121031.fasta</string>
+  </fastaFiles>
+  <fastaFilesFirstSearch/>
+  <fixedSearchFolder/>
+  <advancedRatios>false</advancedRatios>
+  <rtShift>false</rtShift>
+  <separateLfq>false</separateLfq>
+  <lfqStabilizeLargeRatios>true</lfqStabilizeLargeRatios>
+  <lfqRequireMsms>true</lfqRequireMsms>
+  <decoyMode>revert</decoyMode>
+  <specialAas>KR</specialAas>
+  <includeContamiants>true</includeContamiants>
+  <equalIl>false</equalIl>
+  <topxWindow>100</topxWindow>
+  <maxPeptideMass>4600</maxPeptideMass>
+  <reporterPif>0.75</reporterPif>
+  <reporterFraction>0</reporterFraction>
+  <reporterBasePeakRatio>0</reporterBasePeakRatio>
+  <minDeltaScoreUnmodifiedPeptides>0</minDeltaScoreUnmodifiedPeptides>
+  <minDeltaScoreModifiedPeptides>17</minDeltaScoreModifiedPeptides>
+  <minScoreUnmodifiedPeptides>0</minScoreUnmodifiedPeptides>
+  <minScoreModifiedPeptides>40</minScoreModifiedPeptides>
+  <filterAacounts>true</filterAacounts>
+  <secondPeptide>true</secondPeptide>
+  <matchBetweenRuns>true</matchBetweenRuns>
+  <matchUnidentifiedFeatures>false</matchUnidentifiedFeatures>
+  <matchBetweenRunsFdr>false</matchBetweenRunsFdr>
+  <reQuantify>true</reQuantify>
+  <dependentPeptides>false</dependentPeptides>
+  <dependentPeptideFdr>0</dependentPeptideFdr>
+  <dependentPeptideMassBin>0</dependentPeptideMassBin>
+  <msmsConnection>false</msmsConnection>
+  <ibaq>false</ibaq>
+  <useDeltaScore>false</useDeltaScore>
+  <avalon>false</avalon>
+  <msmsRecalibration>false</msmsRecalibration>
+  <ibaqLogFit>false</ibaqLogFit>
+  <razorProteinFdr>true</razorProteinFdr>
+  <deNovoSequencing>false</deNovoSequencing>
+  <deNovoVarMods>true</deNovoVarMods>
+  <massDifferenceSearch>false</massDifferenceSearch>
+  <minPepLen>7</minPepLen>
+  <peptideFdr>0.01</peptideFdr>
+  <proteinFdr>0.05</proteinFdr>
+  <siteFdr>0.01</siteFdr>
+  <minPeptideLengthForUnspecificSearch>8</minPeptideLengthForUnspecificSearch>
+  <maxPeptideLengthForUnspecificSearch>25</maxPeptideLengthForUnspecificSearch>
+  <useNormRatiosForOccupancy>true</useNormRatiosForOccupancy>
+  <minPeptides>1</minPeptides>
+  <minRazorPeptides>1</minRazorPeptides>
+  <minUniquePeptides>0</minUniquePeptides>
+  <useCounterparts>false</useCounterparts>
+  <minRatioCount>2</minRatioCount>
+  <restrictProteinQuantification>true</restrictProteinQuantification>
+  <restrictMods>
+    <string>Acetyl (Protein N-term)</string>
+    <string>Oxidation (M)</string>
+  </restrictMods>
+  <matchingTimeWindow>2</matchingTimeWindow>
+  <alignmentTimeWindow>20</alignmentTimeWindow>
+  <numberOfCandidatesMultiplexedMsms>25</numberOfCandidatesMultiplexedMsms>
+  <numberOfCandidatesMsms>15</numberOfCandidatesMsms>
+  <massDifferenceMods/>
+  <crossLinkerSearch>false</crossLinkerSearch>
+  <crossLinker/>
+  <labileCrossLinkerSearch>false</labileCrossLinkerSearch>
+  <labileCrossLinker>DSSO</labileCrossLinker>
+  <RescoreMsx>false</RescoreMsx>
+  <msmsParamsArray>
+    <msmsParams Name='FTMS' InPpm='true' Deisotope='true' Topx='12' HigherCharges='true' IncludeWater='true' IncludeAmmonia='true' DependentLosses='true'>
+      <Tolerance>
+        <Value>20</Value>
+        <Unit>Ppm</Unit>
+      </Tolerance>
+      <DeNovoTolerance>
+        <Value>20</Value>
+        <Unit>Ppm</Unit>
+      </DeNovoTolerance>
+    </msmsParams>
+    <msmsParams Name='ITMS' InPpm='false' Deisotope='false' Topx='8' HigherCharges='true' IncludeWater='true' IncludeAmmonia='true' DependentLosses='true'>
+      <Tolerance>
+        <Value>0.5</Value>
+        <Unit>Dalton</Unit>
+      </Tolerance>
+      <DeNovoTolerance>
+        <Value>0.5</Value>
+        <Unit>Dalton</Unit>
+      </DeNovoTolerance>
+    </msmsParams>
+    <msmsParams Name='TOF' InPpm='false' Deisotope='false' Topx='10' HigherCharges='true' IncludeWater='true' IncludeAmmonia='true' DependentLosses='true'>
+      <Tolerance>
+        <Value>0.1</Value>
+        <Unit>Dalton</Unit>
+      </Tolerance>
+      <DeNovoTolerance>
+        <Value>0.1</Value>
+        <Unit>Dalton</Unit>
+      </DeNovoTolerance>
+    </msmsParams>
+    <msmsParams Name='Unknown' InPpm='false' Deisotope='false' Topx='10' HigherCharges='true' IncludeWater='true' IncludeAmmonia='true' DependentLosses='true'>
+      <Tolerance>
+        <Value>0.5</Value>
+        <Unit>Dalton</Unit>
+      </Tolerance>
+      <DeNovoTolerance>
+        <Value>0.5</Value>
+        <Unit>Dalton</Unit>
+      </DeNovoTolerance>
+    </msmsParams>
+  </msmsParamsArray>
+  <msmsCentroidMode>1</msmsCentroidMode>
+  <quantMode>1</quantMode>
+  <siteQuantMode>0</siteQuantMode>
+</MaxQuantParams>
+""".format("\n".join(map(lambda x: "\t<string>{0}</string>".format(x[1]), self._fsrc_fdst)),
+           "\n".join(map(lambda x: "\t<string>{0}</string>".format(os.path.splitext(os.path.basename(x[1]))[0]), self._fsrc_fdst)),
+           "\n".join(map(lambda x: "\t<short>32767</short>", self._fsrc_fdst)),
+           "\n".join(map(lambda x: "\t<unsignedByte>3</unsignedByte>", self._fsrc_fdst)),
+           "\n".join(map(lambda x: "\t<int>0</int>", self._fsrc_fdst)))
+
+        try:
+            with open(filename, "w") as f:
+                logger.info("writing '{0}' ...".format(filename))
+                f.write(_xml)
+        except:
+            logger.info("writing maxquant driver file failed.")
+            raise
+
+        return True
+
 
 
     def run(self):
@@ -176,6 +384,7 @@ class FgczMaxquantWrapper:
 
         self.create_scratch()
         self.copy_input_to_scratch()
+        self.compose_maxquant_driver_file(filename="{0}/MaxQuant_driver.xml".format(self.scratch))
 
         return True
 

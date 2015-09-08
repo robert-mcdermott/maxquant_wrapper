@@ -1,4 +1,4 @@
-    #!/usr/bin/python
+        #!/usr/bin/python
 
 
 import sys
@@ -101,9 +101,6 @@ class FgczMaxquantWrapper:
     def generate_qc_report(self):
         pass
 
-<<<<<<< HEAD
-    
-=======
 class TestTargetMapping(unittest.TestCase):
     """
     run
@@ -118,7 +115,6 @@ class TestTargetMapping(unittest.TestCase):
         #self.assertTrue(map_data_analyst_tripletof_1('p1000\data\selevsek_20150119') is None)
         pass
         return True
->>>>>>> 8ad9bd8237016c32d85f9f60a869f9a2eaf0525e
 
 if __name__ == "__main__":
     parser = OptionParser(usage="usage: %prog -h <hostname>",

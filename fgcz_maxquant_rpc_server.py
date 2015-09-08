@@ -20,18 +20,17 @@ import re
 import logging
 import logging.handlers
 
-def create_logger(name="fcc", address=("130.60.81.148", 514)):
+def create_logger(name="MaxQuant"):
     """
     create a logger object
     """
-    syslog_handler = logging.handlers.SysLogHandler(address=address)
+    syslog_handler = logging.handlers.SysLogHandler(address=("130.60.81.148", 514))
     formatter = logging.Formatter('%(name)s %(message)s')
     syslog_handler.setFormatter(formatter)
 
     logger = logging.getLogger(name)
     logger.setLevel(20)
     logger.addHandler(syslog_handler)
-
 
     return logger
 
@@ -125,7 +124,7 @@ class FgczMaxquantWrapper:
             try:
                 os.mkdir(self.scratch)
             except:
-                print "scratch '{0}' does not exists.".format(self.scratch)
+                logger.info("scratch '{0}' does not exists.".format(self.scratch))
                 raise
 
         return True
@@ -147,10 +146,11 @@ class FgczMaxquantWrapper:
                 for (_fsrc, _fdst) in _fsrc_fdst:
                     if os.path.isfile(_fdst):
                         # TODO(cp): file cmp
-                        # print "YEAH\n'{0}' is already there.\ncontinue ...".format(_fdst)
+                        logger.info("'{0}' is already there.".format(_fdst))
                         pass
                     else:
                         try:
+                            logger.info("copy '{0}'...".format(_fdst))
                             shutil.copyfile(_fsrc, _fdst)
                         except:
                             print "ERROR: fail copy failed."
@@ -288,6 +288,8 @@ if __name__ == "__main__":
         -yaml <config file>
         -rpc
     """
+
+
     parser = OptionParser(usage="usage: %prog -h <hostname>",
                           version="%prog 1.0")
 
@@ -308,4 +310,3 @@ if __name__ == "__main__":
     server.register_instance(mqw)
 
     server.serve_forever()
-

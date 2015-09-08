@@ -3,6 +3,7 @@
 
 import sys
 import os
+import shutil
 import unittest
 
 import xmlrpclib
@@ -22,15 +23,18 @@ class FgczMaxquantWrapper:
     """
     config = None
     scratchroot = os.path.normcase(r"d:/scratch")
+    scratch = scratchroot
 
-    def __init__(self):
+    def __init__(self, config=None):
+
         if not os.path.isdir(self.scratchroot):
             try:
                 os.mkdir(self.scratchroot)
             except:
                 print "scratch '{0}' does not exists.".format(self.scratchroot)
                 raise
-        pass
+        if config:
+            self.config=config
 
     def run_commandline(self, cmd, shell_flag=True):
         (pid, return_code) = (None, None)
@@ -58,7 +62,7 @@ class FgczMaxquantWrapper:
         print err
         return (return_code)
 
-    def scp2smb_url_mapping(self, url,
+    def map_url_scp2smb(self, url,
                             from_prefix_regex="bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs",
                             to_prefix="\\\\130.60.81.21\\data"):
         """maps an url from
@@ -90,23 +94,50 @@ class FgczMaxquantWrapper:
         self.config = config
 
     def create_scratch(self):
-        # create scratch space
+        """create scratch space
+        """
+
+        # TODO(cp): what if workunit is not defined
         self.scratch = os.path.normcase(
             "{0}/{1}".format(self.scratchroot, self.config['job_configuration']['workunit_id']))
+
         if not os.path.isdir(self.scratch):
             try:
                 os.mkdir(self.scratch)
             except:
                 print "scratch '{0}' does not exists.".format(self.scratch)
-                sys.exit(1)
+                raise
+
+        return True
+
+    @property
+    def copy_input_to_scratch(self):
+        """
+        make input resources available on scratch
+        """
 
         # copy input to scratch
+        _input = self.config['application']['input']
+
         try:
-            for i in self.config['application']['input'].keys():
-                for j in self.config['application']['input'][i]:
-                    print j
+            for i in _input.keys():
+                _fsrc_fdst = map(lambda x: (self.map_url_scp2smb(x), os.path.normcase("{0}/{1}".format(self.scratch, os.path.basename(x))) ),
+                           _input[i])
+
+
+                for (_fsrc, _fdst) in _fsrc_fdst:
+                    if os.path.isfile(_fdst):
+                        # TODO(cp): file cmp
+                        print "YEAH\n'{0}' is already there.\ncontinue ...".format(_fdst)
+                    else:
+                        try:
+                            shutil.copyfile(_fsrc, _fdst)
+                        except:
+                            print "ERROR: fail copy failed."
+                            raise
+
         except:
-            sys.exit(1)
+            raise
 
         return True
 
@@ -117,12 +148,14 @@ class FgczMaxquantWrapper:
     def run(self):
         """
         #$maxQuantWindowsFolder\\$MAXQUANTLINUXFOLDERNAME -ncores=8;"
+                #cmd = 'C:\\Program Files\\mxQnt_versions\\MaxQuant_1.4.1.2\\MaxQuant\\bin\\MaxQuantCmd.exe -mqpar={0} -ncores={1}'.format(
+        #    None, 8)
+        #print self.run_commandline(cmd)
+
         """
 
-        cmd = 'C:\\Program Files\\mxQnt_versions\\MaxQuant_1.4.1.2\\MaxQuant\\bin\\MaxQuantCmd.exe -mqpar={0} -ncores={1}'.format(
-            None, 8)
-
-        print self.run_commandline(cmd)
+        self.create_scratch()
+        self.copy_input_to_scrach()
 
     def generate_qc_report(self):
         pass
@@ -206,21 +239,27 @@ class TestTargetMapping(unittest.TestCase):
                        'workunit_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-workunit.html?workunitId=135076',
                        'workunit_id': 135076}}
 
-    mqw = FgczMaxquantWrapper()
+    mqw = FgczMaxquantWrapper(config=test_config)
 
     def setUp(self):
         pass
 
-    def test_scp2smb_url_mapping(self):
+    def test_map_url_scp2smb(self):
         # desired_result = os.path.normpath('p1000/Proteomics/TRIPLETOF_1/selevsek_20150119')
         # self.assertTrue(desired_result == map_data_analyst_tripletof_1('p1000\Data\selevsek_20150119'))
         # self.assertTrue(map_data_analyst_tripletof_1('p1000\data\selevsek_20150119') is None)
         _input = self.test_config['application']['input']
         for input_application in _input.keys():
-            map(lambda x: self.assertTrue(os.path.isfile(self.mqw.scp2smb_url_mapping(x) )),
+            map(lambda x: self.assertTrue(os.path.isfile(self.mqw.map_url_scp2smb(x) )),
                 _input[input_application])
 
+    def test_create_scratch(self):
+        self.assertTrue(self.mqw.create_scratch())
 
+
+    def test_copy_input_to_scratch(self):
+        self.assertTrue(self.mqw.create_scratch())
+        self.assertTrue(self.mqw.copy_input_to_scratch)
 
 
 if __name__ == "__main__":

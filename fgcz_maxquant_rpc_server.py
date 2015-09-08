@@ -82,7 +82,6 @@ class FgczMaxquantWrapper:
 
         if match:
             result_url = "{0}\{1}".format(to_prefix, os.path.normcase(match.group(2)))
-            print result_url
             return (result_url)
         else:
             return None
@@ -92,6 +91,7 @@ class FgczMaxquantWrapper:
 
     def add_configuration(self, config):
         self.config = config
+        return True
 
     def create_scratch(self):
         """create scratch space
@@ -110,7 +110,6 @@ class FgczMaxquantWrapper:
 
         return True
 
-    @property
     def copy_input_to_scratch(self):
         """
         make input resources available on scratch
@@ -128,7 +127,8 @@ class FgczMaxquantWrapper:
                 for (_fsrc, _fdst) in _fsrc_fdst:
                     if os.path.isfile(_fdst):
                         # TODO(cp): file cmp
-                        print "YEAH\n'{0}' is already there.\ncontinue ...".format(_fdst)
+                        # print "YEAH\n'{0}' is already there.\ncontinue ...".format(_fdst)
+                        pass
                     else:
                         try:
                             shutil.copyfile(_fsrc, _fdst)
@@ -155,10 +155,9 @@ class FgczMaxquantWrapper:
         """
 
         self.create_scratch()
-        self.copy_input_to_scrach()
+        self.copy_input_to_scratch()
 
-    def generate_qc_report(self):
-        pass
+        return True
 
 
 class TestTargetMapping(unittest.TestCase):
@@ -256,13 +255,19 @@ class TestTargetMapping(unittest.TestCase):
     def test_create_scratch(self):
         self.assertTrue(self.mqw.create_scratch())
 
-
     def test_copy_input_to_scratch(self):
         self.assertTrue(self.mqw.create_scratch())
         self.assertTrue(self.mqw.copy_input_to_scratch)
 
 
 if __name__ == "__main__":
+    """
+    TODO(cp):
+
+    add option
+        -yaml <config file>
+        -rpc
+    """
     parser = OptionParser(usage="usage: %prog -h <hostname>",
                           version="%prog 1.0")
 
@@ -272,6 +277,7 @@ if __name__ == "__main__":
                       dest="hostname",
                       default="localhost",
                       help="provide a hostname")
+
 
     (options, args) = parser.parse_args()
 

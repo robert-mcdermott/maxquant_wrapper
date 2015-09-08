@@ -1,4 +1,4 @@
-#!/usr/bin/python
+    #!/usr/bin/python
 
 
 import sys
@@ -98,7 +98,7 @@ class FgczMaxquantWrapper:
     def generate_qc_report(self):
         pass
 
-
+    
 
 if __name__ == "__main__":
     parser = OptionParser(usage="usage: %prog -h <hostname>",
@@ -120,3 +120,4 @@ if __name__ == "__main__":
     server.register_instance(mqw)
 
     server.serve_forever()
+

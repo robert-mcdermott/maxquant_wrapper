@@ -1,5 +1,9 @@
 # maxquant_wrapper
-easy high throughput processing 
+- easy high throughput processing 
+- the wrapper takes care for the data staging
+
+## input config file
+## output zip file
 
 
 # old bash script

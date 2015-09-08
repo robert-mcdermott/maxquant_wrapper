@@ -17,6 +17,26 @@ import subprocess
 
 import re
 
+import logging
+import logging.handlers
+
+def create_logger(name="fcc", address=("130.60.81.148", 514)):
+    """
+    create a logger object
+    """
+    syslog_handler = logging.handlers.SysLogHandler(address=address)
+    formatter = logging.Formatter('%(name)s %(message)s')
+    syslog_handler.setFormatter(formatter)
+
+    logger = logging.getLogger(name)
+    logger.setLevel(20)
+    logger.addHandler(syslog_handler)
+
+
+    return logger
+
+logger = create_logger()
+
 class FgczMaxquantWrapper:
     """
 

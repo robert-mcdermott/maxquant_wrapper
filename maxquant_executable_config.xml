@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<executable>
+    <name>maxquant</name>
+    <context>APPLICATION</context>
+    <description>This executable configuration enables possible parameter for the MaxQuant application.</description>
+    <program>/usr/local/fgcz/proteomics/bin/fgcz_maxquant_rpc_client.py</program>
+    <valid>true</valid>
+    <parameter>
+        <modifiable>true</modifiable>
+        <description>defines which fastaFiles MaxQuant should use. has to be installed on the execution host.</description>
+        <key>FASTA</key>
+        <label>FASTA</label>
+        <required>true</required>
+        <type>string</type>
+        <value>D:\MaxQuantDBs\fgcz_swissprot_20121031.fasta</value>
+    </parameter>
+    <parameter>
+        <modifiable>true</modifiable>
+        <description>Choose the enzyme you used to digest your protein with- in most cases this is 'Trypsin/P'.</description>
+        <key>Enzymes</key>
+        <label>Enzyme</label>
+        <required>true</required>
+        <type>string</type>
+        <value>Trypsin/P</value>
+    </parameter>
+</executable>

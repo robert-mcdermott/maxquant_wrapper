@@ -20,11 +20,11 @@ import re
 import logging
 import logging.handlers
 
-def create_logger(name="fcc", address=("130.60.81.148", 514)):
+def create_logger(name="fcc"):
     """
     create a logger object
     """
-    syslog_handler = logging.handlers.SysLogHandler(address=address)
+    syslog_handler = logging.handlers.SysLogHandler(address=("130.60.81.148", 514))
     formatter = logging.Formatter('%(name)s %(message)s')
     syslog_handler.setFormatter(formatter)
 

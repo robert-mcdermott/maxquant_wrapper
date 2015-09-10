@@ -55,7 +55,7 @@ class FgczMaxquantWrapper:
         if config:
             self.config=config
 
-    def run_commandline(self, cmd, shell_flag=True):
+    def run_commandline(self, cmd, shell_flag=False):
         (pid, return_code) = (None, None)
 
         tStart = time.time()
@@ -71,11 +71,12 @@ class FgczMaxquantWrapper:
 
         except OSError as e:
             msg = "exception|pid={0}|OSError=".format(pid, e)
-            print msg
+            logger.info(msg)
+            raise
 
         msg_info = "completed|pid={0}|time={1}|return_code={2}|cmd='{3}'" \
             .format(pid, time.time() - tStart, return_code, cmd)
-        print msg_info
+        logger.info(msg_info)
 
         print out
         print err
@@ -164,7 +165,7 @@ class FgczMaxquantWrapper:
 
     def compose_maxquant_driver_file(self, filename=None):
         assert isinstance(filename, basestring)
-
+        # TODO(cp): stage FASTA
         _xml="""<?xml version='1.0' encoding='UTF-8'?>
 <MaxQuantParams xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns:xsd='http://www.w3.org/2001/XMLSchema' aifSilWeight='4' aifIsoWeight='2' aifTopx='20' aifCorrelation='0.47' aifCorrelationFirstPass='0.8' aifMinMass='0' aifMsmsTol='10' aifSecondPass='true' aifIterative='true' aifThresholdFdr='0.01'>
   <slicePeaks>true</slicePeaks>
@@ -241,7 +242,7 @@ class FgczMaxquantWrapper:
   <multiModificationSearch>false</multiModificationSearch>
   <compositionPrediction>false</compositionPrediction>
   <fastaFiles>
-    <string>D:\MaxQuantDBs\fgcz_swissprot_20121031.fasta</string>
+    <string>D:\\MaxQuantDBs\\fgcz_swissprot_20121031.fasta</string>
   </fastaFiles>
   <fastaFilesFirstSearch/>
   <fixedSearchFolder/>
@@ -271,7 +272,7 @@ class FgczMaxquantWrapper:
   <reQuantify>true</reQuantify>
   <dependentPeptides>false</dependentPeptides>
   <dependentPeptideFdr>0</dependentPeptideFdr>
-  <dependentPeptideMassBin>0</dependentPeptideMassBin>
+  <dependentPeptideMassBin>0</dependentPeptideMassBin>git
   <msmsConnection>false</msmsConnection>
   <ibaq>false</ibaq>
   <useDeltaScore>false</useDeltaScore>
@@ -375,16 +376,16 @@ class FgczMaxquantWrapper:
 
     def run(self):
         """
-        #$maxQuantWindowsFolder\\$MAXQUANTLINUXFOLDERNAME -ncores=8;"
-                #cmd = 'C:\\Program Files\\mxQnt_versions\\MaxQuant_1.4.1.2\\MaxQuant\\bin\\MaxQuantCmd.exe -mqpar={0} -ncores={1}'.format(
-        #    None, 8)
-        #print self.run_commandline(cmd)
-
         """
-
         self.create_scratch()
         self.copy_input_to_scratch()
-        self.compose_maxquant_driver_file(filename="{0}/MaxQuant_driver.xml".format(self.scratch))
+        _maxquant_driver_filename = os.path.normcase("{0}/maxquant_driver.xml".format(self.scratch))
+
+        self.compose_maxquant_driver_file(filename=_maxquant_driver_filename)
+
+        cmd = 'C:\\Program Files\\mxQnt_versions\\MaxQuant_1.4.1.2\\MaxQuant\\bin\\MaxQuantCmd.exe -mqpar={0} -ncores={1}'.format(_maxquant_driver_filename, 8)
+
+        self.run_commandline(cmd)
 
         return True
 

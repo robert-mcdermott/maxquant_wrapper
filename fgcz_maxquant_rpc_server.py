@@ -1,4 +1,4 @@
-# !/usr/bin/python
+#!/usr/bin/python
 
 
 import sys
@@ -41,7 +41,7 @@ class FgczMaxquantWrapper:
 
     """
     config = None
-    scratchroot = os.path.normcase(r"d:/scratch")
+    scratchroot = os.path.normcase(r"e:/scratch")
     scratch = scratchroot
 
     def __init__(self, config=None):

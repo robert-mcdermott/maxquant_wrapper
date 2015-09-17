@@ -48,14 +48,14 @@ class FgczMaxQuant2Scaffold:
         #filePaths = map(lambda x: x.text, self.maxquant_driver.iter('filePaths'))
 
         #print filePaths
-    def compose_scaffold_driver(self, xml_content=None):
+    def compose_scaffold_driver(self, xml_content=None, fasta_dir=None):
         """
 
         :param xmlcontent:
         :return:
         """
 
-        fasta_dir = "/misc/fasta/"
+        #fasta_dir = "/misc/fasta/"
         try:
             file_repo = set(os.listdir(fasta_dir))
         except:
@@ -152,7 +152,7 @@ if __name__ == "__main__":
     """
     """
 
-    parser = OptionParser(usage="usage: %prog -w <workingdirektory> -m <maxquant_dirver.xml> -s <scaffold_driver.xml>", version="%prog 1.0")
+    parser = OptionParser(usage="usage: %prog -w <workingdirektory> -m <maxquant_dirver.xml> -s <scaffold_driver.xml> -f <fasta_dir>", version="%prog 1.0")
 
     parser.add_option("-m", "--maxquant_driver_xml",
                       type='string',
@@ -175,6 +175,15 @@ if __name__ == "__main__":
                       default="/scratch/",
                       help="the location of the working directory")
 
+    parser.add_option("-f", "--fasta_dir",
+                      type='string',
+                      action="store",
+                      dest="fasta_dir",
+                      default="/misc/fasta/",
+                      help="the location of the FASTA files")
+
+
+
 
     (options, args) = parser.parse_args()
 
@@ -183,7 +192,7 @@ if __name__ == "__main__":
 
     S2MQ = FgczMaxQuant2Scaffold(working_dir=options.wd)
     S2MQ.read_maxquant_driver(maxquant_driver)
-    scaffold_driver = S2MQ.compose_scaffold_driver()
+    scaffold_driver = S2MQ.compose_scaffold_driver(fasta_dir=options.fasta_dir)
 
     with open(options.scaffold_driver_filename, "w") as f:
         f.write(scaffold_driver)

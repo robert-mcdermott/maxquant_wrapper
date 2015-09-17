@@ -356,8 +356,8 @@ class FgczMaxquantWrapper:
   <quantMode>1</quantMode>
   <siteQuantMode>0</siteQuantMode>
 </MaxQuantParams>
-""".format("\n".join(map(lambda x: "\t<string>{0}</string>".format(x[1]), self._fsrc_fdst)),
-           "\n".join(map(lambda x: "\t<string>{0}</string>".format(os.path.splitext(os.path.basename(x[1]))[0]), self._fsrc_fdst)),
+""".format("\n".join(map(lambda x: "\t<string>{0}</string>".format(x[1].encode('utf8')), self._fsrc_fdst)),
+           "\n".join(map(lambda x: "\t<string>{0}</string>".format(os.path.splitext(os.path.basename(x[1]))[0].encode('utf8')), self._fsrc_fdst)),
            "\n".join(map(lambda x: "\t<short>32767</short>", self._fsrc_fdst)),
            "\n".join(map(lambda x: "\t<unsignedByte>3</unsignedByte>", self._fsrc_fdst)),
            "\n".join(map(lambda x: "\t<int>0</int>", self._fsrc_fdst)))

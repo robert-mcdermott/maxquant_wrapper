@@ -35,7 +35,7 @@ class FgczMaxquantWrapper:
 
     """
     config = None
-    scratchroot = os.path.normcase(r"d:/scratch")
+    scratchroot = os.path.normcase(r"d:\\scratch_\\")
     scratch = scratchroot
 
     def __init__(self, config=None):
@@ -54,6 +54,7 @@ class FgczMaxquantWrapper:
 
         tStart = time.time()
 
+        logger.info(cmd)
         try:
             p = subprocess.Popen(cmd, shell=shell_flag)
 
@@ -64,9 +65,8 @@ class FgczMaxquantWrapper:
             p.terminate()
 
         except OSError as e:
-            msg = "exception|pid={0}|OSError=".format(pid, e)
+            msg = "exception|pid={0}|OSError={1}".format(pid, e)
             logger.info(msg)
-            raise
 
         msg_info = "completed|pid={0}|time={1}|return_code={2}|cmd='{3}'" \
             .format(pid, time.time() - tStart, return_code, cmd)
@@ -124,9 +124,17 @@ class FgczMaxquantWrapper:
 
         return True
 
-    def copy_input_to_scratch(self):
+    
+	
+
+    def copy_input_to_scratch(self, copy_method=lambda s,t: shutil.copyfile(s, t), src_url_mapping=lambda x: x, dst_url_mapping=lambda x: os.path.basename(x)):
         """
         make input resources available on scratch
+
+
+	for smb use 
+	src_url_mapping = lambda x: (self.map_url_scp2smb(x)
+	dst_url_mapping = os.path.normcase("{0}/{1}".format(self.scratch, os.path.basename(x)))
         """
 
         # copy input to scratch
@@ -135,8 +143,7 @@ class FgczMaxquantWrapper:
         try:
             self._fsrc_fdst = []
             for i in _input.keys():
-                self._fsrc_fdst = self._fsrc_fdst + map(lambda x: (self.map_url_scp2smb(x), os.path.normcase("{0}/{1}".format(self.scratch, os.path.basename(x))) ),
-                           _input[i])
+                self._fsrc_fdst = self._fsrc_fdst + map(lambda x: (src_url_mapping(x), dst_url_mapping(x)), _input[i])
 
 
             for (_fsrc, _fdst) in self._fsrc_fdst:
@@ -146,8 +153,10 @@ class FgczMaxquantWrapper:
                     pass
                 else:
                     try:
-                        logger.info("copy '{0}'...".format(_fdst))
-                        shutil.copyfile(_fsrc, _fdst)
+			if not os.path.isfile(_fsrc):
+                            logger.info("ERROR")
+                        logger.info("copy '{0}' from '{1}' ...".format(_fdst, _fsrc))
+                        copy_method(_fsrc, _fdst)
                     except:
                         print "ERROR: fail copy failed."
                         raise
@@ -367,12 +376,18 @@ class FgczMaxquantWrapper:
         return True
 
 
+    def scp(self, src, dst, ssh_option="-o StrictHostKeyChecking=no -vv"):
+        cmd = "/usr/bin/scp.exe {0} {1} {2}".format(ssh_option, src, dst)
+        self.run_commandline(cmd, shell_flag=True)
 
     def run(self):
         """
         """
         self.create_scratch()
-        self.copy_input_to_scratch()
+
+        self.copy_input_to_scratch(copy_method=lambda x,y:self.scp(x, y), dst_url_mapping=lambda x: "{0}\\{1}".format(self.scratch, os.path.basename(x)))
+        # dst_url_mapping=lambda x: "{0}".format(os.path.basename(x)))
+
         _maxquant_driver_filename = os.path.normcase("{0}/maxquant_driver.xml".format(self.scratch))
 
         self.compose_maxquant_driver_file(filename=_maxquant_driver_filename)

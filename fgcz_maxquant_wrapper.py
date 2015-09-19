@@ -35,7 +35,7 @@ class FgczMaxquantWrapper:
 
     """
     config = None
-    scratchroot = os.path.normcase(r"d:\\scratch_\\")
+    scratchroot = os.path.normcase(r"/cygdrive/d/scratch_")
     scratch = scratchroot
 
     def __init__(self, config=None):
@@ -52,6 +52,7 @@ class FgczMaxquantWrapper:
     def run_commandline(self, cmd, shell_flag=False):
         (pid, return_code) = (None, None)
 
+        (out,err)=("","")
         tStart = time.time()
 
         logger.info(cmd)
@@ -127,14 +128,17 @@ class FgczMaxquantWrapper:
     
 	
 
-    def copy_input_to_scratch(self, copy_method=lambda s,t: shutil.copyfile(s, t), src_url_mapping=lambda x: x, dst_url_mapping=lambda x: os.path.basename(x)):
+    def copy_input_to_scratch(self,
+                              copy_method=lambda s,t: shutil.copyfile(s, t),
+                              src_url_mapping=lambda x: x,
+                              dst_url_mapping=lambda x: os.path.basename(x)):
         """
         make input resources available on scratch
 
 
-	for smb use 
-	src_url_mapping = lambda x: (self.map_url_scp2smb(x)
-	dst_url_mapping = os.path.normcase("{0}/{1}".format(self.scratch, os.path.basename(x)))
+        for smb use:
+            src_url_mapping = lambda x: (self.map_url_scp2smb(x)
+            dst_url_mapping = os.path.normcase("{0}/{1}".format(self.scratch, os.path.basename(x)))
         """
 
         # copy input to scratch
@@ -359,7 +363,7 @@ class FgczMaxquantWrapper:
   <quantMode>1</quantMode>
   <siteQuantMode>0</siteQuantMode>
 </MaxQuantParams>
-""".format("\n".join(map(lambda x: "\t<string>{0}</string>".format(x[1].encode('utf8')), self._fsrc_fdst)),
+""".format("\n".join(map(lambda x: "\t<string>{0}</string>".format(x[1].encode('utf8').replace("/cygdrive/d/", "d:\\").replace("/", "\\")), self._fsrc_fdst)),
            "\n".join(map(lambda x: "\t<string>{0}</string>".format(os.path.splitext(os.path.basename(x[1]))[0].encode('utf8')), self._fsrc_fdst)),
            "\n".join(map(lambda x: "\t<short>32767</short>", self._fsrc_fdst)),
            "\n".join(map(lambda x: "\t<unsignedByte>3</unsignedByte>", self._fsrc_fdst)),
@@ -376,8 +380,11 @@ class FgczMaxquantWrapper:
         return True
 
 
-    def scp(self, src, dst, ssh_option="-o StrictHostKeyChecking=no -vv"):
+    def scp(self, src, dst,
+            ssh_option="-o StrictHostKeyChecking=no -vv"):
+
         cmd = "/usr/bin/scp.exe {0} {1} {2}".format(ssh_option, src, dst)
+
         self.run_commandline(cmd, shell_flag=True)
 
     def run(self):
@@ -385,16 +392,19 @@ class FgczMaxquantWrapper:
         """
         self.create_scratch()
 
-        self.copy_input_to_scratch(copy_method=lambda x,y:self.scp(x, y), dst_url_mapping=lambda x: "{0}\\{1}".format(self.scratch, os.path.basename(x)))
-        # dst_url_mapping=lambda x: "{0}".format(os.path.basename(x)))
+        self.copy_input_to_scratch(copy_method=lambda x,y: self.scp(x, y),
+                                   dst_url_mapping=lambda x: os.path.normpath("{0}/{1}".format(self.scratch, os.path.basename(x))))
 
         _maxquant_driver_filename = os.path.normcase("{0}/maxquant_driver.xml".format(self.scratch))
 
         self.compose_maxquant_driver_file(filename=_maxquant_driver_filename)
 
-        cmd = 'C:\\Program Files\\mxQnt_versions\\MaxQuant_1.4.1.2\\MaxQuant\\bin\\MaxQuantCmd.exe -mqpar={0} -ncores={1}'.format(_maxquant_driver_filename, 8)
+        #cmd = r"/cygdrive/c/mxQnt_versions/MaxQuant_1.4.1.2/MaxQuant/bin/MaxQuantCmd.exe -mqpar={0} -ncores={1}".format(_maxquant_driver_filename.replace("/cygdrive/d/", "d:\\\\").replace("/", "\\\\"), 8)
+        #cmd = "c:\\\\mxQnt_versions\\\\MaxQuant_1.4.1.2\\\\MaxQuant\\\\bin\\\\MaxQuantCmd.exe -mqpar={0} -ncores={1}".format(_maxquant_driver_filename.replace("/cygdrive/d/", "d:\\\\").replace("/", "\\\\"), 8)
 
-        self.run_commandline(cmd)
+
+        cmd=r"c:\mxQnt_versions\MaxQuant_1.4.1.2\MaxQuant\bin\MaxQuantCmd.exe -mqpar=d:\scratch_\135076\maxquant_driver.xml -ncores=8"
+        self.run_commandline(cmd, shell_flag=False)
 
         return True
 

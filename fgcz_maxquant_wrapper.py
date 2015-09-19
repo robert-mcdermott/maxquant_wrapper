@@ -408,4 +408,102 @@ class FgczMaxquantWrapper:
 
         return True
 
+class TestTargetMapping(unittest.TestCase):
+    """
+    This is a class doing testing on a real infrastructure. Ensure that the SAN is available
+    (> net use s: \\fgcz-s-021.uzh.ch\data ...)
+
+    run
+        python -m unittest -v fgcz_maxquant_wrapper
+    """
+
+
+    test_config = {'application': {'input': {'QEXACTIVE_2': [
+        'bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs//p1946/Proteomics/QEXACTIVE_2/paolo_20150811_course/20150811_01_Fetuin40fmol.raw',
+        'bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs//p1946/Proteomics/QEXACTIVE_2/paolo_20150811_course/20150811_02_YPG1.raw',
+        'bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs//p1946/Proteomics/QEXACTIVE_2/paolo_20150811_course/20150811_03_YPG2_GG.raw',
+        'bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs//p1946/Proteomics/QEXACTIVE_2/paolo_20150811_course/20150811_04_YPG2_SL.raw',
+        'bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs//p1946/Proteomics/QEXACTIVE_2/paolo_20150811_course/20150811_05_YPD3.raw',
+        'bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs//p1946/Proteomics/QEXACTIVE_2/paolo_20150811_course/20150811_06_Fetuin40fmol.raw',
+        'bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs//p1946/Proteomics/QEXACTIVE_2/paolo_20150811_course/20150811_07_YPD1.raw',
+        'bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs//p1946/Proteomics/QEXACTIVE_2/paolo_20150811_course/20150811_08_YPD2_SL.raw',
+        'bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs//p1946/Proteomics/QEXACTIVE_2/paolo_20150811_course/20150811_09_YPG3.raw']},
+                                   'protocol': 'scp', 'parameters': {}, 'output': [
+            'bfabric@fgczdata.fgcz-net.unizh.ch:/srv/www/htdocs//p1946/bfabric/Proteomics/MaxQuant_Scaffold_LFQ_tryptic_swissprot/2015/2015-09/2015-09-07//workunit_135076//203583.zip']},
+                   'job_configuration': {
+                       'executable': '/home/bfabric/sgeworker/bin/fgcz_sge_MaxQuant_Scaffold_LFQ_fast',
+                       'external_job_id': 46103, 'input': {'QEXACTIVE_2': [{'sample_id': 26524, 'resource_id': 202116,
+                                                                            'extract_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-extract.html?extractId=32622',
+                                                                            'extract_id': 32622,
+                                                                            'resource_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-resource.html?resourceId=202116',
+                                                                            'sample_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-sample.html?sampleId=26524'},
+                                                                           {'sample_id': 26195, 'resource_id': 202115,
+                                                                            'extract_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-extract.html?extractId=32648',
+                                                                            'extract_id': 32648,
+                                                                            'resource_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-resource.html?resourceId=202115',
+                                                                            'sample_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-sample.html?sampleId=26195'},
+                                                                           {'sample_id': 26195, 'resource_id': 202114,
+                                                                            'extract_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-extract.html?extractId=32648',
+                                                                            'extract_id': 32648,
+                                                                            'resource_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-resource.html?resourceId=202114',
+                                                                            'sample_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-sample.html?sampleId=26195'},
+                                                                           {'sample_id': 26195, 'resource_id': 202113,
+                                                                            'extract_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-extract.html?extractId=32648',
+                                                                            'extract_id': 32648,
+                                                                            'resource_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-resource.html?resourceId=202113',
+                                                                            'sample_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-sample.html?sampleId=26195'},
+                                                                           {'sample_id': 26196, 'resource_id': 202112,
+                                                                            'extract_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-extract.html?extractId=32649',
+                                                                            'extract_id': 32649,
+                                                                            'resource_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-resource.html?resourceId=202112',
+                                                                            'sample_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-sample.html?sampleId=26196'},
+                                                                           {'sample_id': 26524, 'resource_id': 202111,
+                                                                            'extract_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-extract.html?extractId=32622',
+                                                                            'extract_id': 32622,
+                                                                            'resource_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-resource.html?resourceId=202111',
+                                                                            'sample_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-sample.html?sampleId=26524'},
+                                                                           {'sample_id': 26196, 'resource_id': 202110,
+                                                                            'extract_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-extract.html?extractId=32649',
+                                                                            'extract_id': 32649,
+                                                                            'resource_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-resource.html?resourceId=202110',
+                                                                            'sample_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-sample.html?sampleId=26196'},
+                                                                           {'sample_id': 26196, 'resource_id': 202109,
+                                                                            'extract_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-extract.html?extractId=32649',
+                                                                            'extract_id': 32649,
+                                                                            'resource_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-resource.html?resourceId=202109',
+                                                                            'sample_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-sample.html?sampleId=26196'},
+                                                                           {'sample_id': 26195, 'resource_id': 202108,
+                                                                            'extract_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-extract.html?extractId=32648',
+                                                                            'extract_id': 32648,
+                                                                            'resource_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-resource.html?resourceId=202108',
+                                                                            'sample_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-sample.html?sampleId=26195'}]},
+                       'stdout': {'url': '/home/bfabric/sgeworker/logs/workunitid-135076_resourceid-203583.out',
+                                  'protocol': 'file', 'resource_id': 203585}, 'output': {'protocol': 'scp',
+                                                                                         'ssh_args': '-o StrictHostKeyChecking=no -c arcfour -2 -l bfabric -x',
+                                                                                         'resource_id': 203583},
+                       'stderr': {'url': '/home/bfabric/sgeworker/logs/workunitid-135076_resourceid-203583.err',
+                                  'protocol': 'file', 'resource_id': 203584},
+                       'workunit_url': 'http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-workunit.html?workunitId=135076',
+                       'workunit_id': 135076}}
+
+    mqw = FgczMaxquantWrapper(config=test_config)
+
+    def setUp(self):
+        pass
+
+    def test_map_url_scp2smb(self):
+        # desired_result = os.path.normpath('p1000/Proteomics/TRIPLETOF_1/selevsek_20150119')
+        # self.assertTrue(desired_result == map_data_analyst_tripletof_1('p1000\Data\selevsek_20150119'))
+        # self.assertTrue(map_data_analyst_tripletof_1('p1000\data\selevsek_20150119') is None)
+        _input = self.test_config['application']['input']
+        for input_application in _input.keys():
+            map(lambda x: self.assertTrue(os.path.isfile(self.mqw.map_url_scp2smb(x) )),
+                _input[input_application])
+
+    def test_create_scratch(self):
+        self.assertTrue(self.mqw.create_scratch())
+
+    def test_copy_input_to_scratch(self):
+        self.assertTrue(self.mqw.create_scratch())
+        self.assertTrue(self.mqw.copy_input_to_scratch)
 

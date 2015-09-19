@@ -72,6 +72,7 @@ class FgczMaxquantWrapper:
     """
 
     config = None
+    outputurl = None
     scratchroot = os.path.normcase(r"d:\scratch_")
     scratch = scratchroot
 
@@ -87,6 +88,12 @@ class FgczMaxquantWrapper:
             self.config=config
 
     def run_commandline(self, cmd, shell_flag=False):
+        """
+
+        :param cmd:
+        :param shell_flag:
+        :return:
+        """
         (pid, return_code) = (None, None)
 
         (out, err)=("", "")
@@ -151,6 +158,15 @@ class FgczMaxquantWrapper:
         self.config = config
         return True
 
+    def add_outputurl(self, url=None):
+        """
+
+        :param url:
+        :return:
+        """
+        self.outputurl = url
+        return True
+
     def create_scratch(self):
         """create scratch space
         """
@@ -173,7 +189,13 @@ class FgczMaxquantWrapper:
             scp_option=r"-scp -i C:\Users\administrator.FGCZ-NET\.ssh\id_rsa.ppk"
             ):
         """
-        this is the scp wrapper for data staging
+         this is the scp wrapper for data staging
+
+        :param src:
+        :param dst:
+        :param scp_cmd:
+        :param scp_option:
+        :return:
         """
 
         cmd = "{0} {1} {2} {3}".format(scp_cmd, scp_option, src, dst)
@@ -187,12 +209,15 @@ class FgczMaxquantWrapper:
                               src_url_mapping=lambda x: x,
                               dst_url_mapping=lambda x: os.path.basename(x)):
         """
-        make input resources available on scratch
+         make input resources available on scratch
+
+         NOTE: we assume if the file is already in place it is identical to the src file.
 
 
-        for smb use:
-            src_url_mapping = lambda x: (self.map_url_scp2smb(x)
-            dst_url_mapping = os.path.normcase("{0}/{1}".format(self.scratch, os.path.basename(x)))
+        :param copy_method:
+        :param src_url_mapping:
+        :param dst_url_mapping:
+        :return:
         """
 
 
@@ -206,13 +231,10 @@ class FgczMaxquantWrapper:
 
             for (_fsrc, _fdst) in self._fsrc_fdst:
                 if os.path.isfile(_fdst):
-                    # TODO(cp): file cmp
                     logger.info("'{0}' is already there.".format(_fdst))
                     pass
                 else:
                     try:
-			if not os.path.isfile(_fsrc):
-                            logger.info("ERROR")
                         logger.info("copy '{0}' from '{1}' ...".format(_fdst, _fsrc))
                         copy_method(_fsrc, _fdst)
                     except:
@@ -220,6 +242,7 @@ class FgczMaxquantWrapper:
                         raise
 
         except:
+            logger.info("copying failed")
             raise
 
         return True
@@ -439,6 +462,12 @@ class FgczMaxquantWrapper:
         the following function have to be adapted
     """
     def stage_input(self):
+        """
+
+        :return:
+        """
+
+        logger.info("stage input data")
         self.copy_input_to_scratch(copy_method=lambda x, y: self.scp(x, y),
                                    dst_url_mapping=lambda x: os.path.normpath(r"{0}\{1}".format(self.scratch,
                                                                                                 os.path.basename(x))))
@@ -448,44 +477,53 @@ class FgczMaxquantWrapper:
                      ncores=8):
 
 
+        logger.info("run maxquant")
+
         mqpar_filename = os.path.normcase(r"{0}\maxquant_driver.xml".format(self.scratch))
 
         self.compose_maxquant_driver_file(filename=mqpar_filename)
 
+
         self.run_commandline("{0} -mqpar={1} -ncores={2}".format(cmd, mqpar_filename, ncores),
                              shell_flag=False)
-
+   
         return True
-        """
-        cmd = r"/cygdrive/c/mxQnt_versions/MaxQuant_1.4.1.2/MaxQuant/bin/MaxQuantCmd.exe -mqpar={0} -ncores={1}".format(_maxquant_driver_filename.replace("/cygdrive/d/", "d:\\\\").replace("/", "\\\\"), 8)
-        cmd = "c:\\\\mxQnt_versions\\\\MaxQuant_1.4.1.2\\\\MaxQuant\\\\bin\\\\MaxQuantCmd.exe -mqpar={0} -ncores={1}".format(_maxquant_driver_filename.replace("/cygdrive/d/", "d:\\\\").replace("/", "\\\\"), 8)
-        cmd=r"c:\mxQnt_versions\MaxQuant_1.4.1.2\MaxQuant\bin\MaxQuantCmd.exe -mqpar=d:\scratch_\135076\maxquant_driver.xml -ncores=8"
 
-        """
 
     def stage_output(self):
         """
             zip all usefull output filed and copy it to an file exchange server
         :return:
         """
-        """
-        :return:
-        """
-        pass
+
+        logger.info("stage output")
+        zip_cmd = r"C:\Program Files\7-zip\7z.exe"
+
+        zip_file = "{0}.zip".format(self.scratch)
+        self.run_commandline("{0} a {1} {2}".format(zip_cmd, zip_file, self.scratch), shell_flag=False)
+
+
+        if self.outputurl:
+            self.scp(src=zip_file, dst=self.outputurl)
+
+        return True
 
     def clean(self):
         """
             clean scratch space if no errors
         """
+        logger.info("clean is not implemeted yet")
         pass
 
     def run(self):
         """
+            this is the main method of the class
         """
         self.create_scratch()
         self.stage_input()
-        # self.run_maxquant()
+        self.run_maxquant()
         self.stage_output()
+        self.clean()
 
         return "EXCHAGNGE URL"
 

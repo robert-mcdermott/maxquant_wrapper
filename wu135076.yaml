@@ -1,0 +1,90 @@
+application:
+  input:
+    QEXACTIVE_2:
+    - bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs//p1946/Proteomics/QEXACTIVE_2/paolo_20150811_course/20150811_01_Fetuin40fmol.raw
+    - bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs//p1946/Proteomics/QEXACTIVE_2/paolo_20150811_course/20150811_02_YPG1.raw
+    - bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs//p1946/Proteomics/QEXACTIVE_2/paolo_20150811_course/20150811_03_YPG2_GG.raw
+    - bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs//p1946/Proteomics/QEXACTIVE_2/paolo_20150811_course/20150811_04_YPG2_SL.raw
+    - bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs//p1946/Proteomics/QEXACTIVE_2/paolo_20150811_course/20150811_05_YPD3.raw
+    - bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs//p1946/Proteomics/QEXACTIVE_2/paolo_20150811_course/20150811_06_Fetuin40fmol.raw
+    - bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs//p1946/Proteomics/QEXACTIVE_2/paolo_20150811_course/20150811_07_YPD1.raw
+    - bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs//p1946/Proteomics/QEXACTIVE_2/paolo_20150811_course/20150811_08_YPD2_SL.raw
+    - bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs//p1946/Proteomics/QEXACTIVE_2/paolo_20150811_course/20150811_09_YPG3.raw
+  output:
+  - bfabric@fgczdata.fgcz-net.unizh.ch:/srv/www/htdocs//p1946/bfabric/Proteomics/MaxQuant_Scaffold_LFQ_tryptic_swissprot/2015/2015-09/2015-09-07//workunit_135076//203583.zip
+  parameters: {}
+  protocol: scp
+job_configuration:
+  executable: /home/bfabric/sgeworker/bin/fgcz_sge_MaxQuant_Scaffold_LFQ_fast
+  external_job_id: 46103
+  input:
+    QEXACTIVE_2:
+    - extract_id: 32622
+      extract_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-extract.html?extractId=32622
+      resource_id: 202116
+      resource_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-resource.html?resourceId=202116
+      sample_id: 26524
+      sample_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-sample.html?sampleId=26524
+    - extract_id: 32648
+      extract_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-extract.html?extractId=32648
+      resource_id: 202115
+      resource_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-resource.html?resourceId=202115
+      sample_id: 26195
+      sample_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-sample.html?sampleId=26195
+    - extract_id: 32648
+      extract_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-extract.html?extractId=32648
+      resource_id: 202114
+      resource_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-resource.html?resourceId=202114
+      sample_id: 26195
+      sample_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-sample.html?sampleId=26195
+    - extract_id: 32648
+      extract_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-extract.html?extractId=32648
+      resource_id: 202113
+      resource_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-resource.html?resourceId=202113
+      sample_id: 26195
+      sample_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-sample.html?sampleId=26195
+    - extract_id: 32649
+      extract_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-extract.html?extractId=32649
+      resource_id: 202112
+      resource_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-resource.html?resourceId=202112
+      sample_id: 26196
+      sample_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-sample.html?sampleId=26196
+    - extract_id: 32622
+      extract_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-extract.html?extractId=32622
+      resource_id: 202111
+      resource_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-resource.html?resourceId=202111
+      sample_id: 26524
+      sample_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-sample.html?sampleId=26524
+    - extract_id: 32649
+      extract_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-extract.html?extractId=32649
+      resource_id: 202110
+      resource_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-resource.html?resourceId=202110
+      sample_id: 26196
+      sample_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-sample.html?sampleId=26196
+    - extract_id: 32649
+      extract_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-extract.html?extractId=32649
+      resource_id: 202109
+      resource_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-resource.html?resourceId=202109
+      sample_id: 26196
+      sample_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-sample.html?sampleId=26196
+    - extract_id: 32648
+      extract_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-extract.html?extractId=32648
+      resource_id: 202108
+      resource_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-resource.html?resourceId=202108
+      sample_id: 26195
+      sample_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-sample.html?sampleId=26195
+  output:
+    protocol: scp
+    resource_id: 203583
+    ssh_args: -o StrictHostKeyChecking=no -c arcfour -2 -l bfabric -x
+  stderr:
+    protocol: file
+    resource_id: 203584
+    url: /home/bfabric/sgeworker/logs/workunitid-135076_resourceid-203583.err
+  stdout:
+    protocol: file
+    resource_id: 203585
+    url: /home/bfabric/sgeworker/logs/workunitid-135076_resourceid-203583.out
+  workunit_id: 135076
+  workunit_url: http://fgcz-bfabric.uzh.ch/bfabric/userlab/show-workunit.html?workunitId=135076
+

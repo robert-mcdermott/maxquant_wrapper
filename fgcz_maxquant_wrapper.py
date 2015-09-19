@@ -6,13 +6,13 @@ import os
 import shutil
 import unittest
 
-import xmlrpclib
 import time
 import subprocess
 import re
 
 import logging
 import logging.handlers
+import pprint
 
 def create_logger(name="MaxQuant"):
     """
@@ -32,10 +32,47 @@ logger = create_logger()
 
 class FgczMaxquantWrapper:
     """
+    this class does
+        - stage the input data
+        - compose a maxquant driver xml file adapted to the FGCZ infrastructure
+        - run maxquant
+        - stage the output data
+
+    staging:
+        - can be done by using samba or ssh
+        - the class can be executed on the python shell or via rpc
+
+    logging:
+        - is done by a general log server
+
+    input:
+        - a python data structure containing all information
+
+    note: this class is supposed to be run on a Microsoft Windows OS
+
+    TODO(cp,wew): the stagign and exec methods would be better separated into a infrastructure class
+    """
 
     """
+  input:
+    QEXACTIVE_2:
+    - bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs//p1946/Proteomics/QEXACTIVE_2/paolo_20150811_course/20150811_01_Fetuin40fmol.raw
+    - bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs//p1946/Proteomics/QEXACTIVE_2/paolo_20150811_course/20150811_02_YPG1.raw
+    - bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs//p1946/Proteomics/QEXACTIVE_2/paolo_20150811_course/20150811_03_YPG2_GG.raw
+    - bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs//p1946/Proteomics/QEXACTIVE_2/paolo_20150811_course/20150811_04_YPG2_SL.raw
+    - bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs//p1946/Proteomics/QEXACTIVE_2/paolo_20150811_course/20150811_05_YPD3.raw
+    - bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs//p1946/Proteomics/QEXACTIVE_2/paolo_20150811_course/20150811_06_Fetuin40fmol.raw
+    - bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs//p1946/Proteomics/QEXACTIVE_2/paolo_20150811_course/20150811_07_YPD1.raw
+    - bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs//p1946/Proteomics/QEXACTIVE_2/paolo_20150811_course/20150811_08_YPD2_SL.raw
+    - bfabric@fgczdata.fgcz-net.unizh.ch://srv/www/htdocs//p1946/Proteomics/QEXACTIVE_2/paolo_20150811_course/20150811_09_YPG3.raw
+  output:
+  - bfabric@fgczdata.fgcz-net.unizh.ch:/srv/www/htdocs//p1946/bfabric/Proteomics/MaxQuant_Scaffold_LFQ_tryptic_swissprot/2015/2015-09/2015-09-07//workunit_135076//203583.zip
+  parameters: {}
+  protocol: scp
+    """
+
     config = None
-    scratchroot = os.path.normcase(r"/cygdrive/d/scratch_")
+    scratchroot = os.path.normcase(r"d:\scratch_")
     scratch = scratchroot
 
     def __init__(self, config=None):
@@ -52,7 +89,7 @@ class FgczMaxquantWrapper:
     def run_commandline(self, cmd, shell_flag=False):
         (pid, return_code) = (None, None)
 
-        (out,err)=("","")
+        (out, err)=("", "")
         tStart = time.time()
 
         logger.info(cmd)
@@ -68,6 +105,9 @@ class FgczMaxquantWrapper:
         except OSError as e:
             msg = "exception|pid={0}|OSError={1}".format(pid, e)
             logger.info(msg)
+            print err
+            print out
+            raise
 
         msg_info = "completed|pid={0}|time={1}|return_code={2}|cmd='{3}'" \
             .format(pid, time.time() - tStart, return_code, cmd)
@@ -102,9 +142,12 @@ class FgczMaxquantWrapper:
             return None
 
     def print_config(self):
-        print self.config
+        print "------"
+        pp = pprint.PrettyPrinter(width=70)
+        pp.pprint(self.config)
+        return True
 
-    def add_configuration(self, config):
+    def add_config(self, config):
         self.config = config
         return True
 
@@ -125,8 +168,19 @@ class FgczMaxquantWrapper:
 
         return True
 
-    
-	
+    def scp(self, src, dst,
+            scp_cmd=r"C:\Program Files\fgcz\pscp.exe",
+            scp_option=r"-scp -i C:\Users\administrator.FGCZ-NET\.ssh\id_rsa.ppk"
+            ):
+        """
+        this is the scp wrapper for data staging
+        """
+
+        cmd = "{0} {1} {2} {3}".format(scp_cmd, scp_option, src, dst)
+
+        self.run_commandline(cmd, shell_flag=False)
+
+        return (True)
 
     def copy_input_to_scratch(self,
                               copy_method=lambda s,t: shutil.copyfile(s, t),
@@ -141,7 +195,7 @@ class FgczMaxquantWrapper:
             dst_url_mapping = os.path.normcase("{0}/{1}".format(self.scratch, os.path.basename(x)))
         """
 
-        # copy input to scratch
+
         _input = self.config['application']['input']
 
         try:
@@ -374,39 +428,66 @@ class FgczMaxquantWrapper:
                 logger.info("writing '{0}' ...".format(filename))
                 f.write(_xml)
         except:
-            logger.info("writing maxquant driver file failed.")
+            logger.info("writing maxquant driver file '{0}' failed.".format(filename))
             raise
 
         return True
 
 
-    def scp(self, src, dst,
-            ssh_option="-o StrictHostKeyChecking=no -vv"):
 
-        cmd = "/usr/bin/scp.exe {0} {1} {2}".format(ssh_option, src, dst)
+    """
+        the following function have to be adapted
+    """
+    def stage_input(self):
+        self.copy_input_to_scratch(copy_method=lambda x, y: self.scp(x, y),
+                                   dst_url_mapping=lambda x: os.path.normpath(r"{0}\{1}".format(self.scratch,
+                                                                                                os.path.basename(x))))
 
-        self.run_commandline(cmd, shell_flag=True)
+    def run_maxquant(self,
+                     cmd=r"C:\Program Files\fgcz\mxQnt_versions\MaxQuant_1.4.1.2\MaxQuant\bin\MaxQuantCmd.exe",
+                     ncores=8):
+
+
+        mqpar_filename = os.path.normcase(r"{0}\maxquant_driver.xml".format(self.scratch))
+
+        self.compose_maxquant_driver_file(filename=mqpar_filename)
+
+        self.run_commandline("{0} -mqpar={1} -ncores={2}".format(cmd, mqpar_filename, ncores),
+                             shell_flag=False)
+
+        return True
+        """
+        cmd = r"/cygdrive/c/mxQnt_versions/MaxQuant_1.4.1.2/MaxQuant/bin/MaxQuantCmd.exe -mqpar={0} -ncores={1}".format(_maxquant_driver_filename.replace("/cygdrive/d/", "d:\\\\").replace("/", "\\\\"), 8)
+        cmd = "c:\\\\mxQnt_versions\\\\MaxQuant_1.4.1.2\\\\MaxQuant\\\\bin\\\\MaxQuantCmd.exe -mqpar={0} -ncores={1}".format(_maxquant_driver_filename.replace("/cygdrive/d/", "d:\\\\").replace("/", "\\\\"), 8)
+        cmd=r"c:\mxQnt_versions\MaxQuant_1.4.1.2\MaxQuant\bin\MaxQuantCmd.exe -mqpar=d:\scratch_\135076\maxquant_driver.xml -ncores=8"
+
+        """
+
+    def stage_output(self):
+        """
+            zip all usefull output filed and copy it to an file exchange server
+        :return:
+        """
+        """
+        :return:
+        """
+        pass
+
+    def clean(self):
+        """
+            clean scratch space if no errors
+        """
+        pass
 
     def run(self):
         """
         """
         self.create_scratch()
+        self.stage_input()
+        # self.run_maxquant()
+        self.stage_output()
 
-        self.copy_input_to_scratch(copy_method=lambda x,y: self.scp(x, y),
-                                   dst_url_mapping=lambda x: os.path.normpath("{0}/{1}".format(self.scratch, os.path.basename(x))))
-
-        _maxquant_driver_filename = os.path.normcase("{0}/maxquant_driver.xml".format(self.scratch))
-
-        self.compose_maxquant_driver_file(filename=_maxquant_driver_filename)
-
-        #cmd = r"/cygdrive/c/mxQnt_versions/MaxQuant_1.4.1.2/MaxQuant/bin/MaxQuantCmd.exe -mqpar={0} -ncores={1}".format(_maxquant_driver_filename.replace("/cygdrive/d/", "d:\\\\").replace("/", "\\\\"), 8)
-        #cmd = "c:\\\\mxQnt_versions\\\\MaxQuant_1.4.1.2\\\\MaxQuant\\\\bin\\\\MaxQuantCmd.exe -mqpar={0} -ncores={1}".format(_maxquant_driver_filename.replace("/cygdrive/d/", "d:\\\\").replace("/", "\\\\"), 8)
-
-
-        cmd=r"c:\mxQnt_versions\MaxQuant_1.4.1.2\MaxQuant\bin\MaxQuantCmd.exe -mqpar=d:\scratch_\135076\maxquant_driver.xml -ncores=8"
-        self.run_commandline(cmd, shell_flag=False)
-
-        return True
+        return "EXCHAGNGE URL"
 
 class TestTargetMapping(unittest.TestCase):
     """

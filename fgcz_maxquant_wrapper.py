@@ -249,7 +249,16 @@ class FgczMaxquantWrapper:
 
     def compose_maxquant_driver_file(self, filename=None):
         assert isinstance(filename, basestring)
-        # TODO(cp): stage FASTA
+        fasta_filename = None
+
+        try:
+            fasta_filename = self.config['application']['input']['parameters']['FASTA']
+
+        except:
+            fasta_filename = r"D:\MaxQuantDBs\fgcz_swissprot_20121031.fasta"
+
+        fasta_filename = os.path.normpath((os.path.normcase(fasta_filename))
+
         _xml="""<?xml version='1.0' encoding='UTF-8'?>
 <MaxQuantParams xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns:xsd='http://www.w3.org/2001/XMLSchema' aifSilWeight='4' aifIsoWeight='2' aifTopx='20' aifCorrelation='0.47' aifCorrelationFirstPass='0.8' aifMinMass='0' aifMsmsTol='10' aifSecondPass='true' aifIterative='true' aifThresholdFdr='0.01'>
   <slicePeaks>true</slicePeaks>
@@ -326,7 +335,7 @@ class FgczMaxquantWrapper:
   <multiModificationSearch>false</multiModificationSearch>
   <compositionPrediction>false</compositionPrediction>
   <fastaFiles>
-    <string>D:\\MaxQuantDBs\\fgcz_swissprot_20121031.fasta</string>
+    <string>{5}</string>
   </fastaFiles>
   <fastaFilesFirstSearch/>
   <fixedSearchFolder/>
@@ -444,7 +453,8 @@ class FgczMaxquantWrapper:
            "\n".join(map(lambda x: "\t<string>{0}</string>".format(os.path.splitext(os.path.basename(x[1]))[0].encode('utf8')), self._fsrc_fdst)),
            "\n".join(map(lambda x: "\t<short>32767</short>", self._fsrc_fdst)),
            "\n".join(map(lambda x: "\t<unsignedByte>3</unsignedByte>", self._fsrc_fdst)),
-           "\n".join(map(lambda x: "\t<int>0</int>", self._fsrc_fdst)))
+           "\n".join(map(lambda x: "\t<int>0</int>", self._fsrc_fdst)),
+           fasta_filename)
 
         try:
             with open(filename, "w") as f:
@@ -486,7 +496,7 @@ class FgczMaxquantWrapper:
 
         self.run_commandline("{0} -mqpar={1} -ncores={2}".format(cmd, mqpar_filename, ncores),
                              shell_flag=False)
-   
+
         return True
 
 

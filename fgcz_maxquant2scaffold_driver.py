@@ -55,7 +55,7 @@ class FgczMaxQuant2Scaffold:
         :return:
         """
 
-        #fasta_dir = "/misc/fasta/"
+
         try:
             file_repo = set(os.listdir(fasta_dir))
         except:
@@ -95,9 +95,10 @@ class FgczMaxQuant2Scaffold:
 
         fasta = "{0}".format(self.getFasta()[0])
         if fasta in file_repo:
-            print "YEAH - {0}/{1}".format(fasta_dir,fasta)
+            print "YEAH - {0}/{1}".format(fasta_dir, fasta)
         else:
             print "ERROR: {0} is not available in {1}".format(fasta, fasta_dir)
+            raise
 
         FastaDatabase = etree.SubElement(exp, "FastaDatabase")
         fastaDatabaseDetails = [('id', fasta), 
@@ -113,8 +114,10 @@ class FgczMaxQuant2Scaffold:
             BiologicalSample = etree.SubElement(exp, "BiologicalSample")
             QuantitativeModel = etree.SubElement(BiologicalSample, "QuantitativeModel")
             QuantitativeSample = etree.SubElement(QuantitativeModel, "QuantitativeSample")
+
             InputFile = etree.SubElement(BiologicalSample, "InputFile")
-            InputFile.text = "{0}/{1}".format(self.working_dir, input_file)
+            InputFile.text = "{0}".format(self.working_dir)
+            inputFileDetails = [('maxQuantExperiment', "{0}".format(os.path.splitext(input_file)[0]))]
 
             biologicalSampleDetails = [
                     ("database", fasta),
@@ -134,6 +137,7 @@ class FgczMaxQuant2Scaffold:
             map(lambda x: BiologicalSample.set(*x), biologicalSampleDetails)
             map(lambda x: QuantitativeModel.set(*x), quantitativeModelDetails)
             map(lambda x: QuantitativeSample.set(*x), quantitativeSampleDetails)
+            map(lambda x: InputFile.set(*x), inputFileDetails)
 
             exp.append(BiologicalSample)
 
@@ -187,6 +191,7 @@ if __name__ == "__main__":
 
     (options, args) = parser.parse_args()
 
+    print "reading maxquant driver file '{0}' ...".format(options.maxquant_driver_filename)
     with open(options.maxquant_driver_filename, "r") as f:
         maxquant_driver = f.read()
 
@@ -194,6 +199,7 @@ if __name__ == "__main__":
     S2MQ.read_maxquant_driver(maxquant_driver)
     scaffold_driver = S2MQ.compose_scaffold_driver(fasta_dir=options.fasta_dir)
 
+    print "writting scaffold driver file to '{0}' ...".format(options.scaffold_driver_filename)
     with open(options.scaffold_driver_filename, "w") as f:
         f.write(scaffold_driver)
 

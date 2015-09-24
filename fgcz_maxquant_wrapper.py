@@ -252,12 +252,12 @@ class FgczMaxquantWrapper:
         fasta_filename = None
 
         try:
-            fasta_filename = self.config['application']['input']['parameters']['FASTA']
+            fasta_filename = self.config['application']['parameters']['FASTA']
 
         except:
             fasta_filename = r"D:\MaxQuantDBs\fgcz_swissprot_20121031.fasta"
 
-        fasta_filename = os.path.normpath((os.path.normcase(fasta_filename))
+        fasta_filename = os.path.normpath(os.path.normcase(fasta_filename))
 
         _xml="""<?xml version='1.0' encoding='UTF-8'?>
 <MaxQuantParams xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns:xsd='http://www.w3.org/2001/XMLSchema' aifSilWeight='4' aifIsoWeight='2' aifTopx='20' aifCorrelation='0.47' aifCorrelationFirstPass='0.8' aifMinMass='0' aifMsmsTol='10' aifSecondPass='true' aifIterative='true' aifThresholdFdr='0.01'>
@@ -486,7 +486,6 @@ class FgczMaxquantWrapper:
                      cmd=r"C:\Program Files\fgcz\mxQnt_versions\MaxQuant_1.4.1.2\MaxQuant\bin\MaxQuantCmd.exe",
                      ncores=8):
 
-
         logger.info("run maxquant")
 
         mqpar_filename = os.path.normcase(r"{0}\maxquant_driver.xml".format(self.scratch))
@@ -506,14 +505,17 @@ class FgczMaxquantWrapper:
         :return:
         """
 
+        """
+        S:\cp_temp>"c:\Program Files\7-Zip\7z.exe" a -xr!proc -xr!search -xr!*.raw -xr!ps -xr!*tmp* s:\scratch_\dump2 d:\scratch_\135076d\*
+        """
         logger.info("stage output")
         zip_cmd = r"C:\Program Files\7-zip\7z.exe"
 
-        zip_file = "{0}.zip".format(self.scratch)
-        self.run_commandline("{0} a {1} {2}".format(zip_cmd, zip_file, self.scratch), shell_flag=False)
+        zip_file = "{0}.7z".format(self.scratch)
+        self.run_commandline(r"{0} a -xr!proc -xr!search -xr!*.raw -xr!ps {1} {2}\*".format(zip_cmd, self.scratch, self.scratch), shell_flag=False)
 
 
-        if self.outputurl:
+        if self.outputurl and  os.path.isfile(zip_file):
             self.scp(src=zip_file, dst=self.outputurl)
 
         return True

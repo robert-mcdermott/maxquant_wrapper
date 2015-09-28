@@ -313,7 +313,6 @@ class FgczMaxquantWrapper:
       <variableModifications>
         <string>Acetyl (Protein N-term)</string>
         <string>Oxidation (M)</string>
-        <string>Deamidation (NQ)</string>
       </variableModifications>
       <isobaricLabels/>
       <variableModificationsFirstSearch/>
@@ -325,7 +324,7 @@ class FgczMaxquantWrapper:
       <mainSearchTol>4.5</mainSearchTol>
       <lcmsRunType>0</lcmsRunType>
       <lfqMode>1</lfqMode>
-      <enzymeMode>3</enzymeMode>
+      <enzymeMode>0</enzymeMode>
       <enzymeModeFirstSearch>0</enzymeModeFirstSearch>
     </parameterGroup>
   </parameterGroups>

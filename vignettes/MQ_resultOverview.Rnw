@@ -595,6 +595,7 @@ This report is written by J. Grossmann using in Sweave-R and processes text file
 ALL INFORMATION, INTELLECTUAL PROPERTY RIGHTS, PRODUCTS AND / OR SERVICES ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO, WARRANTIES OF MERCHANTABILITY, SUITABILITY AND / OR FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN PARTICULAR, THE FGCZ (Functional Genomics Center Zurich, or any of its employees) MAKES NO WARRANTIES OF ANY KIND REGARDING THE ACCURACY OF ANY DATA, SOFTWARE, SCRIPTS AND / OR DATABASE.
 \\
 \\
-Deep thanks go to C. Panse, S. Barkow, C. Trachsel, P. Nanni, C. Fortes and W. Wolski who provided stimulating environment, discussions and/or a template for this QC report.
+Deep thanks go to C. Panse, S. Barkow, C. Trachsel, P. Nanni, C. Fortes and W. E. Wolski who provided stimulating environment, discussions and/or a template for this QC report.
 
+% All the wrapper scripts are available on \url{https://github.com/fgcz/maxquant_wrapper}.
 \end{document}

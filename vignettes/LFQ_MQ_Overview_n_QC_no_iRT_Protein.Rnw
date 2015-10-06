@@ -1,0 +1,257 @@
+\documentclass[a4paper]{article}
+\usepackage{a4wide}
+\usepackage[utf8]{inputenc}
+
+\title{LFQ as a Service: Summary and QC of MaxQuant results}
+\author{Functional Genomics Center Zuerich}
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+
+<<echo=FALSE, result=HIDE>>=
+library(lattice)
+library(xtable)
+@
+\maketitle
+
+
+\section{Workflow Overview}
+\begin{figure}[htbp]
+  \centerline{\includegraphics[width=0.5\textwidth]{LFQ_QC_workflow.pdf}}
+  \caption{Shown is an Overview over the workflow how the following results are generated}
+  \label{fig:workflowOverview}
+\end{figure}
+
+
+
+
+\section{Data Input Overview}
+\subsection{The Groups}
+Here the files in each group:
+<<echo=FALSE, results=tex>>=
+library(xtable)
+f <- "maxquant/summary.txt"
+dat <- read.table(f, header=T, sep="\t")
+NumFiles <- nrow(dat) -1
+files <- dat[1:NumFiles,1]
+print(xtable(as.matrix(files), caption="measured files"), size="\\normalsize", include.colnames=FALSE)
+@
+
+
+
+\pagebreak
+
+
+\subsection{Look at different outputs from MaxQuant-txtfiles}
+\subsection{Parameters.txt}
+
+Looking at the parameters.txt file gives information which MaxQuant version has been used and the settings for fdr filter cutoffs as well as the FASTA database that was used for searching and the variable modifications that are included in the search.
+
+<<echo=FALSE>>=
+#ParametersFile
+f <- "maxquant/parameters.txt"
+dat <- read.table(f, header=T, sep="\t")
+ff <- "maxquant/summary.txt"
+dat2 <- read.table(ff, header=T, sep="\t")
+
+#write out:
+paste("maxQuantVersion: ",dat[1,2] ,sep="")
+paste("Decoy mode: ",dat[3,2] ,sep="")
+paste("psmFDR: ",dat[18,2] ,sep="")
+paste("proteinFDR: ",dat[19,2] ,sep="")
+paste("Varmods: ",dat[31,2] ,sep="")
+paste("FastaFile: ",dat[45,2] ,sep="")
+paste("Enzyme: ", unique(dat2[1,4]))
+paste("Enzyme specificity: ",unique(dat2[1,5]))
+@
+
+
+\subsection{Summary.txt}
+Looking at the parameters.txt file which gives you an overview on the number of ms and msms scans as well as the number of identifications for the different raw-files.
+
+
+
+<<echo=FALSE>>=
+#conditions <- 
+f <- "maxquant/summary.txt"
+dat <- read.table(f, header=F, sep="\t")
+NumRows <- nrow(dat)/2
+#tt <- cbind(as.character(dat[1:NumRows,1]),as.character(dat[1:NumRows,17]),as.character(dat[1:NumRows,19]),as.character(dat[1:NumRows,24]),as.character(dat[1:NumRows,28]),as.character(dat[1:NumRows,32]))
+tt <- cbind(as.character(dat[1:NumRows,1]),as.character(dat[1:NumRows,17]),as.character(dat[1:NumRows,19]),as.character(dat[1:NumRows,24]),as.character(dat[1:NumRows,32]))
+
+header <- tt[1,]
+topTable <- as.table(tt[-1,])
+colnames(topTable) <- header
+@
+
+Look at numbers:
+<<echo=FALSE, results=tex>>=
+print(xtable(topTable, caption="Overview on the hard numbers for each file."), size="\\small")
+
+@
+\pagebreak
+
+\subsection{Protein identifications overview}
+Next an overview about the number of proteinGroups is shown. We present here more information about the sequence coverage and how many peptides are identified.
+
+
+<<echo=FALSE>>=
+#ProteinGroups
+f <- "maxquant/proteinGroups.txt"
+dat <- read.table(f, header=T, sep="\t")
+
+ff <- "maxquant/peptides.txt"
+dat2 <- read.table(ff, header=T, sep="\t")
+NumPep <- nrow(dat2)
+#total number of proteins
+N <- nrow(dat)
+bool_OneHitWonder <- dat$Razor...unique.peptides==1
+bool_min2 <- dat$Razor...unique.peptides>1
+bool_min3 <- dat$Razor...unique.peptides>2
+ProtMin2 <- sum(bool_min2)
+ProtMin3 <- sum(bool_min3)
+averagePepPerProt <- round(mean(dat$Razor...unique.peptides),2)
+medianPepPerProt <- median(dat$Razor...unique.peptides)
+OneHitWonders <- sum(bool_OneHitWonder)
+paste("Total number of identified proteins: ", N, sep="")
+paste("Total number of protein only one single peptide: ", OneHitWonders, sep="")
+paste("Total number of protein with at least 2 peptides: ", ProtMin2, sep="")
+paste("Total number of protein with at least 3 peptides: ", ProtMin3, sep="")
+paste("-----")
+paste("Average number of peptides per protein: ", averagePepPerProt, sep="")
+paste("Median number of peptides per protein: ", medianPepPerProt, sep="")
+paste("-----")
+paste("Total number of unique identified pepitdes: ", NumPep, sep="")
+@
+
+
+
+\begin{figure}[htbp]
+<<echo=FALSE,fig=TRUE>>=
+#MW
+par(mfrow=c(2,1))
+hist(log(dat$Mol..weight..kDa.,10), breaks=20,col="green", freq=TRUE, main="log10(Molecular Weight (kDa)) Distribution", xlab="log scaled MW[kDa]  :: 1=10kDa   1.5=31.6kDa    2=100kDa", ylab="Counts in bin")
+hist(dat$Mol..weight..kDa., breaks=200,col="green", freq=TRUE, main="Linear Scale", xlab="Molecular Weight [kDa]", ylab="Counts in bin")
+@
+  \caption{Distribution of Molecular Weights for proteins identfied (Upper panel is on log10 scale)}
+  \label{fig:MW}
+\end{figure}
+
+
+
+\begin{figure}[htbp]
+<<echo=FALSE,fig=TRUE, width=4>>=
+#Coverage
+hist(dat$Sequence.coverage.... , breaks=40, freq=TRUE, main="Protein Sequence Coverage", col="grey", xlab="Percentage of Sequence Coverage", ylab="Counts in bin")
+@
+  \caption{Distribution of sequence coverage for all identified proteins}
+  \label{fig:SeqCov}
+\end{figure}
+
+
+\pagebreak
+
+
+\subsection{evidence.txt}
+In the evidence.txt file there are informations for all identified peptides in the full experiment. 
+
+
+<<echo=FALSE>>=
+f <- "maxquant/evidence.txt"
+dat <- read.table(f, header=T, sep="\t")
+@
+
+Now we show the distribution of picked and fragmented precursor masses for the different raw-files.
+
+\begin{figure}[htbp]
+<<echo=FALSE,fig=TRUE,width=8>>=
+histogram(~ dat$m.z|dat$Raw.file, main="Distribution of MS_1_m/z for identified peptides", par.strip.text = list(cex = 0.4), xlab="picked masses for ms2 (m/z)")
+@
+  \caption{Distribution overview for m/z picked for successful identification}
+  \label{fig:mzID}
+\end{figure}
+
+\begin{figure}
+<<echo=FALSE,fig=TRUE,width=8>>=
+histogram(~ dat$Mass.Error..ppm. |dat$Raw.file, nbins=50, main="Distribution of recalibrated mass error (ppm)", par.strip.text = list(cex = 0.4), xlab="Recalibrated mass error (ppm)")
+@
+  \caption{Distribution of recalibrated mass error (ppm)}
+  \label{fig:ppmErrorCali}
+\end{figure}
+
+\pagebreak
+
+\subsection{msms.txt}
+In the msms.txt file there are informations for each and every identfied msms scan. We try here to show if all the files have been equally treated (e.g. same digestion efficiency, variable modifications..) 
+
+
+<<echo=FALSE>>=
+f <- "maxquant/msms.txt"
+dat <- read.table(f, header=T, sep="\t")
+N <- length(table(dat$Raw.file))
+@
+
+\begin{figure}[htbp]
+<<echo=FALSE,fig=TRUE,width=8>>=
+#Length Distribution over identified peptides (split on RAWfile)
+histogram(~ dat$Length|dat$Raw.file, main="Length Distribution of identified peptides", par.strip.text = list(cex = 0.4), xlab="Peptide Length")
+@
+  \caption{Overview of the peptide length for identified peptides}
+  \label{fig:Length}
+\end{figure}
+
+\begin{figure}[htbp]
+<<echo=FALSE,fig=TRUE,width=8>>=
+#Missed cleavage
+N <- length(table(dat$Raw.file))
+histogram(~ dat$Missed.cleavages|dat$Raw.file,main="Distribution of missed cleavages", par.strip.text = list(cex = 0.4), xlab="Number of missed cleavages")
+@
+  \caption{Overview for missed-cleavages for identified peptides (split on Rawfile level)}
+  \label{fig:mmc}
+\end{figure}
+
+\begin{figure}[htbp]
+<<echo=FALSE,fig=TRUE, width=8, height=15>>=
+#VarMods
+N <- length(table(dat$Raw.file))
+#modPeps <- cbind(as.character(dat$Raw.file), as.character(dat$Modifications))
+#table(modPeps)
+#histogram(~ dat$Modifications|dat$Raw.file, main="VarMods per RawFile", layout=c(1,N), scales = list(x = list(rot = 90)))
+histogram(~ dat$Modifications|dat$Raw.file, main="VarMods per RawFile",  scales = list(x = list(rot = 90, cex=0.8)), par.strip.text = list(cex = 0.4), xlab="Variable modifications")
+@
+  \caption{Overview of identified modifications for identified peptides}
+  \label{fig:Varmods}
+\end{figure}
+
+\begin{figure}[htbp]
+<<echo=FALSE,fig=TRUE,width=8>>=
+#Charge
+histogram(~ dat$Charge|dat$Raw.file, main="Distribution of Charges for identified peptides", par.strip.text = list(cex = 0.4), xlab="Charge of identified peptides")
+@
+  \caption{Overview of charge states for identified peptides.}
+  \label{fig:Charge}
+\end{figure}
+
+%
+%
+%    HERE TO INSERT THE iRT SECTION ON LC STABILTY
+%
+%
+
+
+\pagebreak
+
+\section{QC of Quantitative Values}
+As this QC should show a high reproducibility among the different protein extracts we do a correlation of all quantitative values (pairwise). The closer the correlation to ONE the better. 
+
+
+\pagebreak
+
+\section{Disclaimer and Acknowledgements}
+This QC script is written by J. Grossmann using in Sweave-R and processes text files which are exported from MaxQuant v.1.4.0.1 and ScaffoldV4.
+It is purely descriptive.
+\\
+\\
+Deep thanks go to C. Panse, S. Barkow and W. Wolski who provided stimulating environment and/or a template for this QC report.
+
+\end{document}

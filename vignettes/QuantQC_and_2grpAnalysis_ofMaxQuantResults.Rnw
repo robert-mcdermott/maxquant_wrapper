@@ -1,0 +1,305 @@
+\documentclass[a4paper]{article}
+\usepackage{a4wide}
+\usepackage[utf8]{inputenc}
+
+\title{FGCZ 2 group analysis: \\
+Statistics for a Quantitative Protein Matrix}
+\author{Functional Genomics Center Zuerich}
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+
+<<echo=FALSE, result=HIDE>>=
+source("QprotMatrixFunctions_rn_V2.R")
+@
+
+\maketitle
+
+
+
+\section{Input Matrix}
+<<echo=FALSE>>=
+expName <- "experimentName"
+@
+\begin{verbatim}
+Experiment is called: \Sexpr{expName}
+\end{verbatim}
+
+\subsection{Numbers}
+The protein matrix is read like this:
+<<echo=FALSE>>=
+
+#filter for more than 2 peptides to use in quantitation -> we have to go back to original proteinGroups
+# extract the columns that have unique and razor more than 1
+# apply this bool to the IntenstiyMAT
+
+#Original
+f <- "maxquant/proteinGroups.txt"
+Fulldat <- read.table(f, header=T, sep="\t")
+bool_moreThanOnePeptide <- Fulldat$Razor...unique.peptides > 1
+
+
+f <- "proteinGroups_FGCZ2grp_Intensity.txt"
+#f <- "proteinGroups_FGCZ2grp_LFQintensity_unorganized.txt"
+dat <- read.table(f, header=T, sep="\t",row.names=1)
+quantDat <- dat[bool_moreThanOnePeptide,]
+QuantableProteins <- nrow(quantDat)
+
+#write out:
+#paste("ExperimentName: ",expName ,sep="")
+totProteins <- nrow(dat)
+#paste("Number of Proteins in Matrix: ",totProteins ,sep="")
+msRuns <- ncol(dat)
+#paste("Number of mass spec files: ",msRuns ,sep="")
+grpSize <- ncol(dat)/2
+#paste("Group size: ",grpSize ,sep="")
+dat_noZeros <- RemoveRowsWithZerosFromProtMatrix(dat)
+matWoZeros <- nrow(dat_noZeros)
+#paste("NOT Sparse rows (no zero in these rows): ",matWoZeros ,sep="")
+#asinhDat <- asinh(dat)
+protsWithZeros <- totProteins - matWoZeros
+protWihtOnlyOne <- totProteins - QuantableProteins
+percQuant <- round((QuantableProteins*100)/totProteins,2)
+@
+
+\begin{verbatim}
+The total number of proteins in this experiment is:  \Sexpr{totProteins}
+--
+Number of LC-MS/MS experiments included:  \Sexpr{msRuns}
+Number of LC-MS/MS experiments in each group:  \Sexpr{grpSize}
+--
+Number of proteins with missing values:  \Sexpr{protsWithZeros}
+Number of proteins without missing values: \Sexpr{matWoZeros}
+Number of proteins with more than ONE peptide: \Sexpr{QuantableProteins}
+Number of proteins with only one peptide: \Sexpr{protWihtOnlyOne}
+
+\end{verbatim}
+
+\newpage
+\subsection{The Groups}
+Here the files in each group:
+<<echo=FALSE, results=tex>>=
+library(xtable)
+grpOne <- colnames(dat)[1:grpSize]
+grpOne <- as.matrix(grpOne)
+colnames(grpOne) <- "MS experiment file"
+print(xtable(grpOne, caption="MS files in group ONE"), size="\\normalsize")
+@
+
+<<echo=FALSE, results=tex>>=
+grpTwo <- colnames(dat)[(grpSize+1):msRuns]
+grpTwo <- as.matrix(grpTwo)
+colnames(grpTwo) <- "MS experiment file"
+print(xtable(as.matrix(grpTwo), caption="MS files in group TWO"), size="\\normalsize")
+@
+
+\newpage
+\subsection{The Proteins Used for Quantitation}
+
+We are limiting ourself to proteins identified with at least 2 peptides to include this protein for quantitation.
+The total number of proteins that can be used for quantitation is therefore around \Sexpr{percQuant} percentage of all proteins identified.
+
+
+The input matrix has the following structure.\\
+\begin{figure}[htbp]
+<<echo=FALSE, fig=TRUE, width=6, results=hide>>=
+i_dat <- ImputeValuesInProtMatrixForRowsWithZeros(quantDat)
+
+n_dat <- NormalizeWithMedianPQMatrix(quantDat)
+#n_sumDat <- NormalizeTotalSumOfPQMatrix(quantDat)
+n_i_dat <- NormalizeWithMedianPQMatrix(i_dat)
+
+
+#image(asinh(t(dat)))
+#axis(1,colnames(dat)[2], at = 2)
+heatmap.2(asinh(as.matrix(quantDat)), dendrogram = "none", trace = "none", labRow="",margins=c(15,2), main="all MS experiments", ylab="proteins")
+@
+  \caption{Heatmap for quantifyable proteins (asinh transformed)}
+  \label{fig:imagPlot}
+\end{figure}
+
+
+\begin{figure}[htbp]
+<<echo=FALSE, fig=TRUE, width=6>>=
+samples <- names(dat)
+colors <- rainbow(length(samples))
+plotDensity(asinh(quantDat), col=colors, lwd=1, main="untreated SignalDistributions (asinh)")
+legend("topright", samples, text.col=colors)
+@
+  \caption{Density plot for quantifyable proteins (asinh transformed)}
+  \label{fig:densityAsinh}
+\end{figure}
+
+\newpage
+
+\subsection{Imputation and Normalization}
+
+Due to miss-aligning a molecular feature cannot always be matched in all the runs (match between runs) even if its there. The quantitative value in these cases would be zero. To overcome this problem we use impuation (R-package: missForest) to estimate a value instead of loosing the value completely. Due to the vast majority of small values in the full dataset the imputed value is usually near back-ground level.
+
+Shown in Figure \ref{fig:i_dens} are the un-normalized but imputed quantitative values while in Figure \ref{fig:normDensityPlot} the median normalization is applied.
+
+
+\begin{figure}[htbp]
+<<echo=FALSE, fig=TRUE, width=6, height=6 >>=
+plotDensity(asinh(i_dat), col=colors, lwd=1, main="SignalDistributions")
+legend("topright", samples, text.col=colors)
+@
+  \caption{Density plot of the quant values with imputation in asinh transformation}
+  \label{fig:i_dens}
+\end{figure}
+
+\begin{figure}[htbp]
+<<echo=FALSE, fig=TRUE, width=6, height=6>>=
+plotDensity(asinh(n_i_dat), col=colors, lwd=1, main="SignalDistributions")
+legend("topright", samples, text.col=colors)
+@
+  \caption{Density plot for normalized values based on imputed matrix (asinh)}
+  \label{fig:normDensityPlot}
+\end{figure}
+
+
+The correlation of the vectors with the quantitative values shows very well how similar the MS experiments are. Here one should see the grouping based on the clustering. In Figure \ref{fig:iCor} are the un-normalized values while in Figure \ref{fig:normCorr} the median normalized values are used to calculate the correlation.
+
+\begin{figure}[htbp]
+<<echo=FALSE, fig=TRUE, width=6>>=
+DoCorrelationOnMatrix(asinh(i_dat))
+@
+  \caption{Correlation plot for all runs with imputated values (asinh)}
+  \label{fig:iCor}
+\end{figure}
+
+
+\begin{figure}[htbp]
+<<echo=FALSE, fig=TRUE, width=6>>=
+DoCorrelationOnMatrix(asinh(n_i_dat))
+@
+  \caption{Correlation plot for normalized values based on imputed matrix (asinh)}
+  \label{fig:normCorr}
+\end{figure}
+
+
+
+
+\newpage
+
+\subsection{Heatmaps and Clustering for Proteins}
+
+In Figure XXX we show
+\begin{figure}[htbp]
+<<echo=FALSE, fig=TRUE, width=6>>=
+DoHeatMapForProteins(asinh(n_i_dat))
+@
+  \caption{Heatmap for normalized values based on imputed matrix (asinh transformed)}
+  \label{fig:normHeatM}
+\end{figure}
+
+
+
+
+\newpage
+\section{FGCZ - Two Group Analysis (normalized and imputed)}
+
+\subsection{Stringent Thresholds}
+
+<<echo=FALSE, fig=FALSE, width=6>>=
+mat <- n_i_dat
+FCth <- 2
+sigThr <- 0.01
+@
+Here we show for the different matrices the result of a two group analysis. Significant calls are made with pValue smaller $\Sexpr{sigThr}$ and fold changes above $\Sexpr{FCth}$.
+We output first the length of the list (the list is also written to a text file with group means, pValue, FDR, FoldChange). Additionally we output graphically the Volcano plot.
+
+
+\begin{figure}[htbp]
+<<echo=FALSE, fig=TRUE, width=6>>=
+mat <- n_i_dat
+list <- Do2grpTtestRobustOnMatrixAndBHcorrWithThresholdAndFoldChangeAndReturnOnlySignificantsInternalTrafo(ProtQuantMatrix=mat,SignificanceThreshold=sigThr, LinFoldChangeThreshold=FCth, bool_TrafoHere=TRUE)
+colnames(list) <- c("ProteinGroup","pValue","FDR(adjusted pValue)","log2(mean(grp1)/mean(grp2))")
+fname <- paste("SignificantProteins_", expName,"_Norm__imputedValues_pV-",sigThr,"_FC-",FCth,".txt", sep="")
+write.table(list, fname,row.names=FALSE, col.names=TRUE)
+perc <- nrow(list)/nrow(i_dat)
+volcanoList <- DoVolcanoPlotWithFCnSigThreshold(ProtQuantMatrix=mat, SignificanceThreshold=sigThr,FoldChangeThreshold=FCth,boolTrafo=TRUE)
+@
+  \caption{VolcanoPlot for normalized and imputed proteins (asinh) with stringent thresholds.}
+  \label{fig:VolcNotNorm_imp_string}
+\end{figure}
+
+\textbf{Working with the following parameters:}\\
+FoldChangThreshold: \Sexpr{FCth}\\
+SignificanceThreshold (pvalue): \Sexpr{sigThr}\\
+Total number of Proteins in list: \Sexpr{nrow(i_dat)}\\
+Total number of significant Proteins: \Sexpr{nrow(list)}\\
+\\
+That is a percentage: \Sexpr{round(perc*100,2)}
+
+
+\newpage
+\subsection{Relaxed Threshold}
+
+<<echo=FALSE, fig=FALSE, width=6>>=
+mat <- n_i_dat
+FCth <- 1.5
+sigThr <- 0.05
+@
+Here we show for the different matrices the result of a two group analysis. Significant calls are made with pValue smaller $\Sexpr{sigThr}$ and fold changes above $\Sexpr{FCth}$.
+We output first the length of the list (the list is also written to a text file with group means, pValue, FDR, FoldChange). Additionally we output graphically the Volcano plot.
+
+\begin{figure}[htbp]
+<<echo=FALSE, fig=TRUE, width=6>>=
+mat <- n_i_dat
+list <- Do2grpTtestRobustOnMatrixAndBHcorrWithThresholdAndFoldChangeAndReturnOnlySignificantsInternalTrafo(ProtQuantMatrix=mat,SignificanceThreshold=sigThr, LinFoldChangeThreshold=FCth, bool_TrafoHere=TRUE)
+fname <- paste("SignificantProteins_", expName,"_Norm__imputedValues_pV-",sigThr,"_FC-",FCth,".txt", sep="")
+colnames(list) <- c("ProteinGroup","pValue","FDR(adjusted pValue)","log2(mean(grp1)/mean(grp2))")
+write.table(list, fname,row.names=FALSE, col.names=TRUE)
+perc <- nrow(list)/nrow(i_dat)
+volcanoList <- DoVolcanoPlotWithFCnSigThreshold(ProtQuantMatrix=mat, SignificanceThreshold=sigThr,FoldChangeThreshold=FCth,boolTrafo=TRUE)
+@
+  \caption{VolcanoPlot for normalized and imputed matrix (asinh) with relaxed thresholds.}
+  \label{fig:VolcNotNorm_imp_relaxed}
+\end{figure}
+
+\textbf{Working with the following parameters:}\\
+FoldChangThreshold: \Sexpr{FCth}\\
+SignificanceThreshold (pvalue): \Sexpr{sigThr}\\
+Total number of Proteins in list: \Sexpr{nrow(i_dat)}\\
+Total number of significant Proteins: \Sexpr{nrow(list)}\\
+\\
+That is a percentage: \Sexpr{round(perc*100,2)}
+
+
+
+<<echo=FALSE, fig=FALSE, width=6>>=
+mat <- n_i_dat
+TotList <- Do2grpTtestOnMatrixAndBHcorrReturnAllInternalTrafo(ProtQuantMatrix=mat, bool_TrafoHere=TRUE)
+fname <- paste("AllProteins_", expName,"_Normalized_imputedValues.txt", sep="")
+colnames(TotList) <- c("ProteinGroup","pValue","FDR(adjusted pValue)","log2(mean(grp1)/mean(grp2))")
+write.table(TotList, fname,row.names=FALSE, col.names=TRUE)
+mat <- i_dat
+TotList2 <- Do2grpTtestOnMatrixAndBHcorrReturnAllInternalTrafo(ProtQuantMatrix=mat, bool_TrafoHere=TRUE)
+colnames(TotList2) <- c("ProteinGroup","pValue","FDR(adjusted pValue)","log2(mean(grp1)/mean(grp2))")
+fname <- paste("AllProteins_", expName,"_notNormalized_imputedValues.txt", sep="")
+write.table(TotList2, fname,row.names=FALSE, col.names=TRUE)
+@
+
+
+
+\begin{figure}[htbp]
+<<echo=FALSE, fig=TRUE, width=6>>=
+hist(as.numeric(TotList[,2]), breaks=20, main="Histogram of pValues", xlab="Density of pValues")
+@
+  \caption{Histogram of pValues. For true biological differences between 2 groups, the histogram should not be a flat line but have a peak for small pValues}
+  \label{fig:pVHist}
+\end{figure}
+
+
+
+
+\section{Disclaimer and Acknowledgements}
+This QC script is written by J. Grossmann using in Sweave-R and processes text files which are exported either from ScaffoldV4 (e.g. using total or top three precursor intensities as quantitative value) but can also be generated elsewhere.
+In anycase the obtained results should be validated orthogonally as well (e.g. with Western blots).
+The FGCZ does not provide any kind of guarantee of the validity of these statistics. 
+\\
+\\
+Deep thanks go to C. Panse, S. Barkow and W. Wolski who provided stimulating environment and/or a template for this stat report.
+
+\end{document}

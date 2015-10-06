@@ -10,7 +10,7 @@
 
 ## install
 
-### on Max Quant Server
+### @ Max Quant Server
 
 setup ssh tunnel between host where `fgcz_maxquant_rpc_client.py` runs and where `fgcz_maxquant_rpc_server.py` runs
 
@@ -23,10 +23,11 @@ run `fgcz_maxquant_rpc_server.py` with default options
 ```batch
 c:\Python27\python.exe fgcz_maxquant_rpc_server.py
 ```
-### on Max Quant client
+### @ Max Quant client
 
 ```
 fgcz_maxquant_rpc_client.py my_config.yaml
 ```
+
 
 

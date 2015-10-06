@@ -257,7 +257,8 @@ class FgczMaxquantWrapper:
         except:
             fasta_filename = r"D:\MaxQuantDBs\fgcz_swissprot_20121031.fasta"
 
-        fasta_filename = os.path.normpath(os.path.normcase(fasta_filename))
+        # fasta_filename = os.path.normpath(os.path.normcase(fasta_filename))
+        fasta_filename = os.path.normpath(fasta_filename)
 
         _xml="""<?xml version='1.0' encoding='UTF-8'?>
 <MaxQuantParams xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns:xsd='http://www.w3.org/2001/XMLSchema' aifSilWeight='4' aifIsoWeight='2' aifTopx='20' aifCorrelation='0.47' aifCorrelationFirstPass='0.8' aifMinMass='0' aifMsmsTol='10' aifSecondPass='true' aifIterative='true' aifThresholdFdr='0.01'>

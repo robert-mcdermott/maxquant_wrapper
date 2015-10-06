@@ -20,8 +20,13 @@ $ ssh $USER@fgcz-c-071 -R8084:localhost:8084 -N -v
 
 run `fgcz_maxquant_rpc_server.py` with default options
 
-```dos
-
+```batch
 c:\Python27\python.exe fgcz_maxquant_rpc_server.py
 ```
+### on Max Quant client
+
+```
+fgcz_maxquant_rpc_client.py my_config.yaml
+```
+
 

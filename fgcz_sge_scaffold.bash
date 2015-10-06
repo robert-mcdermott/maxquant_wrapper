@@ -1,4 +1,7 @@
 #!/bin/bash
+# Christian Panse <cp@fgcz.ethz.ch>
+# 20151006
+
 
 #$ -q scaffold
 

@@ -12,7 +12,7 @@ YAML=$1
 DUMPURL="bfabric@130.60.81.21:/scratch/"
 WORKUNITID=`$YAMLREADER -c $YAML -q wu`
 OUTPUTURL=`$YAMLREADER -c $YAML -q output`
-SGEAPPBIN=/home/cpanse/bin/
+SGEAPPBIN=~cpanse/__checkouts/maxquant_wrapper/
 
 [ -f $YAML ] || { echo "$YAML file is not available"; exit 1; }
 

@@ -1,6 +1,7 @@
 #!/bin/bash
 # Christian Panse <cp@fgcz.ethz.ch>
 
+set -x
 SCRATCH=$1
 ZIP=$2
 OUTPUTURL=$3
@@ -16,5 +17,7 @@ rm -rfv $ZIP $SCRATCH/* || { echo "clean failed"; exit 1; }
 # report BFABRIC 
 /home/bfabric/.python/fgcz_bfabric_setResourceStatus_available.py $RESSOURCEID \
 && /home/bfabric/.python/fgcz_bfabric_setExternalJobStatus_done.py $EXTERNALJOBID 
+
+set +x
 
 exit 0

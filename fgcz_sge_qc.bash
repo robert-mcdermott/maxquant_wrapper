@@ -6,15 +6,16 @@ set -x
 SCRATCH=$1
 ZIP=$2
 
-#SWEAVEDIR=/home/bfabric/sgeworker/bin/R-Sweave_QCofMQresults/
 WRAPPERDIR=~cpanse/__checkouts/maxquant_wrapper/
 SWEAVEDIR=$WRAPPERDIR/vignettes/
+test -d $SWEAVEDIR || { echo "could not find vignettes in '$SWEAVEDIR'."; exit 1; }
+
 
 echo "SCRATCH=$SCRATCH"
 echo "ZIP=$ZIP"
-
-
 test -d $SCRATCH && cd $SCRATCH || { echo "cd $SCRATCH  failed"; exit 1; }
+
+
 
 
 pwd
@@ -39,6 +40,9 @@ else
 	echo "neither iRT_Protein nor RT-Kit found in proteinGroups.txt"
 	cp $SWEAVEDIR/LFQ_MQ_Overview_n_QC_no_iRT_Protein.Rnw QCSweaveFile.Rnw
 fi
+
+# copying the graphics reqired by the by the Rnw files
+cp -v $SWEAVEDIR/graphics/*.pdf .
 
 # clean up proteinGroups.txt and evidence.txt for Sweave by removing the Fasta description
 /usr/bin/python3 $WRAPPERDIR/fgcz_maxquant_lfq_parser.py -i evidence.txt -o evidence.txt -u removeColumn

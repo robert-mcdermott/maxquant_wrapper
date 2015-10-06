@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Christian Panse <cp@fgcz.ethz.ch>
+# 20151006
+
 #$ -q all.q@fgcz-c-071
 
 set -x
@@ -15,9 +18,6 @@ echo "SCRATCH=$SCRATCH"
 echo "ZIP=$ZIP"
 test -d $SCRATCH && cd $SCRATCH || { echo "cd $SCRATCH  failed"; exit 1; }
 
-
-
-
 pwd
 
 test -f evidence.txt || { echo "evidence.txt is missing does not exists." ; exit 1; }
@@ -29,20 +29,8 @@ test -f summary.txt || { echo "one ore more txt file is missing does not exists.
 cp -v proteinGroups.txt proteinGroups.txt.bak
 cp -v evidence.txt evidence.txt.bak
 
-# Select which MQ_resultOverview to take based on RT-Kit and iRT_Protein
-#if grep --quiet RT-Kit proteinGroups.txt; then 
-#	echo "RT-Kit found in proteinGroups.txt"
-#	cp $SWEAVEDIR/LFQ_MQ_Overview_n_QC_RT-Kit.Rnw QCSweaveFile.Rnw
-#elif grep --quiet iRT_Protein proteinGroups.txt; then
-#	echo "iRT_Protein found in proteinGroups.txt"
-#	cp $SWEAVEDIR/LFQ_MQ_Overview_n_QC_iRT_Protein.Rnw QCSweaveFile.Rnw
-#else  
-#	echo "neither iRT_Protein nor RT-Kit found in proteinGroups.txt"
-#	cp $SWEAVEDIR/LFQ_MQ_Overview_n_QC_no_iRT_Protein.Rnw QCSweaveFile.Rnw
-#fi
-
 # copying the graphics reqired by the by the Rnw files
-cp $SWEAVEDIR/MQ_resultOverview.Rnw QCSweaveFile.Rnw
+cp $SWEAVEDIR/MQ_resultOverview.Rnw MaxQuant_report.Rnw
 cp -v $SWEAVEDIR/graphics/*.pdf .
 cp -v $SWEAVEDIR/QprotMatrixFunctions_rn_V2.R .
 
@@ -58,18 +46,18 @@ test $? -gt 0 && { echo "cleaning up proteinGroups.txt failed"; exit 1; }
 
 test -L maxquant || ln -s . maxquant || { echo "ln -s . maxquant failed"; exit 1; }
 R --no-save --no-restore  <<EOF
-Stangle('QCSweaveFile.Rnw')
-Sweave('QCSweaveFile.Rnw')
+Stangle('MaxQuant_report.Rnw')
+Sweave('MaxQuant_report.Rnw')
 quit('yes')
 EOF
 
 set +x
 
 test $? -eq 0 \
-&& xelatex QCSweaveFile.tex \
-&& xelatex QCSweaveFile.tex 
+&& xelatex MaxQuant_report.tex \
+&& xelatex MaxQuant_report.tex 
 
 test $? -eq 0 \
-&& /usr/bin/zip -j $ZIP  *.txt QCSweaveFile.pdf *.sf3 *.xml
+&& /usr/bin/zip -j $ZIP  *.txt MaxQuant_report.pdf *.sf3 *.xml *.yaml
 
 exit 0

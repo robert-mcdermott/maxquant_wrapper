@@ -22,7 +22,7 @@ mkdir -p $SCRATCH || { echo "mkdir '$SCRATCH' failed"; exit 1; }
 
 
 [ -f $YAML ] || { echo "$YAML file is not available"; exit 1; }
-cp $YANL $SCRATCH
+cp $YAML $SCRATCH || { echo "cp yaml file failed"; exit 1; }
 
 echo "JOB_ID=$JOB_ID"
 echo "BASH_VERSINFO=$BASH_VERSINFO"
